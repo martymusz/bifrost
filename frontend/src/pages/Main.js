@@ -19,7 +19,7 @@ class Main extends Component {
 
   loginUser = async (event) => {
     event.preventDefault();
-    await fetch("http://127.0.0.1:5000/api/login", {
+    await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       "Access-Control-Allow-Origin": true,
