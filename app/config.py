@@ -1,5 +1,8 @@
 
-SECRET_KEY = "GDtfD^&$%@^8tgYjD"
+
+FLASK_APP = 'run.py'
+FLASK_ENV = 'development'
+SECRET_KEY = 'GDtfD^&$%@^8tgYjD'
 
 SQLALCHEMY_DATABASE_URI = 'postgresql://voxalhor:ShNAjKeXdaKF7UKid3pmBAx17Fwtyv-c@mel.db.elephantsql.com/voxalhor'
 SQLALCHEMY_TRACK_MODIFICATIONS = False

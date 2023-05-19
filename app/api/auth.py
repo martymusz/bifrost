@@ -20,23 +20,27 @@ def login():
         user = User.login(email=email, password=password)
 
     except IndexError as e:
-        current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Incorrect login attempt')
+        current_app.logger.info(
+            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Incorrect login attempt')
         return jsonify({'message': 'Please provide user details', 'error': 'Bad Request'}), 400
 
     except Exception as e:
-        current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Incorrect login attempt')
+        current_app.logger.info(
+            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Incorrect login attempt')
         return jsonify({'message': 'Please provide user details', 'error': 'Bad Request'}), 400
 
     else:
         if not user:
-            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s failed to log in',
-                                    user.email)
+            current_app.logger.info(
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s failed to log in',
+                user.email)
             return jsonify(
                 {'error': 'Email or password is not correct'}), 403
 
         elif not user.active:
-            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s failed to log in',
-                                    user.email)
+            current_app.logger.info(
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s failed to log in',
+                user.email)
             return jsonify({'error': 'User is not active anymore'}), 403
 
         else:
@@ -44,8 +48,9 @@ def login():
                 {'user': user.email, 'expiration': str(datetime.now() + timedelta(days=1))},
                 current_app.config['SECRET_KEY'], algorithm='HS256')
 
-            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s logged in successfully',
-                                    user.email)
+            current_app.logger.info(
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + '%s logged in successfully',
+                user.email)
             return jsonify({'token': token, 'user': user.to_dict()})
 
 
@@ -61,7 +66,8 @@ def register():
         new_user = User.add_new_user(email=email, password=password, name=name, role=role)
 
     except IntegrityError as e:
-        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User already exists')
+        current_app.logger.error(
+            'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User already exists')
         return jsonify({'error': 'User already exists'}), 500
 
     except Exception as e:
