@@ -1,0 +1,31 @@
+/* Navigation.css */
+/*top, right, bottom, left */
+
+.navigation {
+    position: top;
+    text-decoration: none;
+    top: 0;
+    background-color: cornflowerblue;
+    width: 100%;
+
+}
+
+.navigation li {
+    display: inline-block;
+    color: white;
+    font-size: larger;
+    padding: 1% 2% 1% 2%
+    
+}
+
+
+.navigation li:hover {
+    background-color: white;
+    color: cornflowerblue;
+}
+
+.navigation-right {
+    float: right;
+}
+
+

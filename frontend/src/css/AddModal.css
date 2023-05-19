@@ -1,0 +1,16 @@
+/* AddModal.css */
+/*top, right, bottom, left */
+
+.add-modal {
+    table-layout: fixed;
+    width: 96%;
+    white-space: nowrap;
+    border-collapse: collapse;
+    margin: 1% 1% 1% 1%;
+    background-color:#f1f1f1;
+    padding: 1% 1% 1% 1%;
+}
+
+.radio-container {
+    width: 40%;
+}
