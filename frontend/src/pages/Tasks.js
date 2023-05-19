@@ -53,7 +53,7 @@ class Tasks extends Component {
 
   fetchTasks = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/tasks", {
+    await fetch("/api/tasks", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ class Tasks extends Component {
     end_date
   ) => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/tasks/add", {
+    fetch("/api/tasks/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

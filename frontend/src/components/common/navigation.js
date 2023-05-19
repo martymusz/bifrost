@@ -8,7 +8,7 @@ class Navigation extends Component {
     super(props);
     this.state = {
       role: "",
-      tabs: [
+      tabs_admin: [
         { id: 0, value: "Logout" },
         { id: 1, value: "Home" },
         { id: 2, value: "Connections" },
@@ -16,6 +16,15 @@ class Navigation extends Component {
         { id: 4, value: "Tables" },
         { id: 5, value: "Tasks" },
         { id: 6, value: "User Admin" },
+      ],
+
+      tabs_other: [
+        { id: 0, value: "Logout" },
+        { id: 1, value: "Home" },
+        { id: 2, value: "Connections" },
+        { id: 3, value: "Metamodels" },
+        { id: 4, value: "Tables" },
+        { id: 5, value: "Tasks" },
       ],
     };
     this.navigateToPage = this.navigateToPage.bind(this);
@@ -56,18 +65,34 @@ class Navigation extends Component {
   render() {
     return (
       <div className="navigation">
-        {this.state.tabs.map((tab) =>
-          this.state.role === 1 || (this.state.role !== 1 && tab.id !== 6) ? (
-            <li
-              className={tab.id === 0 ? "navigation-right" : "navigation-left"}
-              key={tab.id}
-              onClick={() => this.navigateToPage(tab.id)}
-            >
-              {tab.value}
-            </li>
-          ) : (
-            <div></div>
-          )
+        {this.state.role === 1 ? (
+          <div>
+            {this.state.tabs_admin.map((tab) => (
+              <li
+                className={
+                  tab.id === 0 ? "navigation-right" : "navigation-left"
+                }
+                key={tab.id}
+                onClick={() => this.navigateToPage(tab.id)}
+              >
+                {tab.value}
+              </li>
+            ))}
+          </div>
+        ) : (
+          <div>
+            {this.state.tabs_other.map((tab) => (
+              <li
+                className={
+                  tab.id === 0 ? "navigation-right" : "navigation-left"
+                }
+                key={tab.id}
+                onClick={() => this.navigateToPage(tab.id)}
+              >
+                {tab.value}
+              </li>
+            ))}
+          </div>
         )}
       </div>
     );

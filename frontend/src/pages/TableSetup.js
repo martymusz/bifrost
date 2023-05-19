@@ -74,7 +74,7 @@ class TableSetup extends Component {
 
   fetchMetaModels = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/metamodels", {
+    await fetch("/api/metamodels", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -97,7 +97,7 @@ class TableSetup extends Component {
 
   fetchConnections = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/connections", {
+    await fetch("/api/connections", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -121,7 +121,7 @@ class TableSetup extends Component {
   fetchTables = async (connection_id) => {
     const token = Cookies.get("authToken");
     await fetch(
-      `http://127.0.0.1:5000/api/connection/${connection_id}/tables`,
+      `/api/connection/${connection_id}/tables`,
       {
         method: "POST",
         headers: {

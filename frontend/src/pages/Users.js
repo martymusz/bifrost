@@ -27,7 +27,7 @@ class Users extends Component {
 
   fetchUsers = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/users", {
+    await fetch("/api/users", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ class Users extends Component {
 
   addUser = (email, name, password, role) => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/users/add", {
+    fetch("/api/users/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -69,7 +69,7 @@ class Users extends Component {
 
   changeStatus = (userid, action) => {
     const token = Cookies.get("authToken");
-    fetch(`http://127.0.0.1:5000/api/user/${userid}/status`, {
+    fetch(`/api/user/${userid}/status`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ class Users extends Component {
 
   changeRole = (userid, role) => {
     const token = Cookies.get("authToken");
-    fetch(`http://127.0.0.1:5000/api/user/${userid}/role`, {
+    fetch(`/api/user/${userid}/role`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

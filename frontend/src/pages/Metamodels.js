@@ -53,7 +53,7 @@ class Metamodels extends Component {
 
   addMetamodel = (metamodel_name, metamodel_schema, target_connection_id) => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/metamodels/add", {
+    fetch("/api/metamodels/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ class Metamodels extends Component {
 
   fetchMetaModels = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/metamodels", {
+    await fetch("/api/metamodels", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ class Metamodels extends Component {
 
   fetchConnections = () => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/connections", {
+    fetch("/api/connections", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

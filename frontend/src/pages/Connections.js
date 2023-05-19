@@ -45,7 +45,7 @@ class Connections extends Component {
 
   fetchConnections = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/connections", {
+    await fetch("/api/connections", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -77,7 +77,7 @@ class Connections extends Component {
     track_modifications
   ) => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/connections/add", {
+    fetch("/api/connections/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ class Connections extends Component {
     track_modifications
   ) => {
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/users/add", {
+    fetch("/api/users/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

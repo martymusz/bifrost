@@ -52,7 +52,7 @@ class Tables extends Component {
 
   fetchTables = async () => {
     const token = Cookies.get("authToken");
-    await fetch("http://127.0.0.1:5000/api/tables", {
+    await fetch("/api/tables", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
