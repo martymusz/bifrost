@@ -10,7 +10,7 @@ from app.utils import create_task_executed, create_task_failed, restore_tasks, s
 
 def create_app():
 
-    app = Flask(__name__, static_folder='././bifrost-frontend/build', static_url_path='')
+    app = Flask(__name__, static_folder='frontend/build', static_url_path='')
 
     logger = logging.getLogger('app')
     logger.setLevel(logging.DEBUG)
@@ -35,7 +35,6 @@ def create_app():
         restore_tasks(app)
 
     CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000"]}})
-
     app.register_blueprint(api)
 
     return app
