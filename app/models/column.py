@@ -5,10 +5,12 @@ class Column(db.Model):
     __tablename__ = 'columns'
     __table_args__ = {'schema': 'bifrost'}
 
-    column_id = db.Column(db.Integer, db.Sequence('seq_column'), primary_key=True, index=True)
-    column_name = db.Column(db.String(80), nullable=False)
-    column_type = db.Column(db.String(80), nullable=False)
-    table_id = db.Column(db.Integer, nullable=False)
+    sequence = db.Sequence('seq_column', schema='bifrost')
+
+    column_id = db.Column(db.Integer, sequence, primary_key=True, index=True)
+    column_name = db.Column(db.String(80))
+    column_type = db.Column(db.String(80))
+    table_id = db.Column(db.Integer)
 
     def to_dict(self):
         return {

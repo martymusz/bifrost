@@ -9,6 +9,7 @@ class Users extends Component {
     this.state = {
       authenticated: false,
       data: [],
+      active: 6
     };
 
     this.fetchUsers = this.fetchUsers.bind(this);

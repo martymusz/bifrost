@@ -1,3 +1,4 @@
+from sqlalchemy import quoted_name
 from app.models import db
 
 
@@ -5,15 +6,17 @@ class Table(db.Model):
     __tablename__ = 'tables'
     __table_args__ = {'schema': 'bifrost'}
 
-    table_id = db.Column(db.Integer, db.Sequence('seq_table'), primary_key=True, index=True)
+    sequence = db.Sequence('seq_table', schema='bifrost')
+
+    table_id = db.Column(db.Integer, sequence, primary_key=True, index=True)
     table_name = db.Column(db.String(50), nullable=False)
-    columns = db.Column(db.String(255))
+    columns = db.Column(db.String(1000))
     table_type = db.Column(db.String(50), nullable=False)
     dimension_type = db.Column(db.String(50))
     dimension_key = db.Column(db.String(50))
     metamodel_id = db.Column(db.Integer, nullable=False)
     source_connection_id = db.Column(db.Integer)
-    sql = db.Column(db.String(1000))
+    sql = db.Column(db.String(3000))
 
     def to_dict(self):
         return {
@@ -61,3 +64,11 @@ class Table(db.Model):
     def get_by_name(table_name):
         table = Table.query.filter_by(table_name=table_name)[0]
         return table
+
+    @staticmethod
+    def check_delete_metamodel(metamodel_id):
+        tables = Table.query.filter_by(metamodel_id=metamodel_id)[0]
+        if tables:
+            return True
+        else:
+            return False

@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import RadioSelect from "./common/radioSelect";
-import DropDown from "./common/dropDown";
-import DateTimePicker from "./common/datePicker";
+import RadioSelect from "../common/radioSelect";
+import DropDown from "../common/dropDown";
+import DateTimePicker from "../common/datePicker";
 import Cookies from "js-cookie";
-import "../css/AddModal.css";
+import CustomAlert from "../common/alert";
 
 class AddTask extends Component {
   constructor(props) {
@@ -32,18 +32,31 @@ class AddTask extends Component {
   }
 
   radioOptionsOne = [
-    { name: "load", value: "regular", label: "Regular", key: "regular" },
-    { name: "load", value: "init", label: "Init load", key: "init" },
+    {
+      name: "load",
+      value: "regular",
+      label: "Normál töltés",
+      key: "regular",
+      id: "0",
+    },
+    {
+      name: "load",
+      value: "init",
+      label: "Kezdő töltés",
+      key: "init",
+      id: "1",
+    },
   ];
 
   radioOptionsTwo = [
     {
       name: "sched",
       value: "interval",
-      label: "Scheduled",
+      label: "Ismétlődő",
       key: "interval",
+      id: "2",
     },
-    { name: "sched", value: "date", label: "Ad-hoc", key: "date" },
+    { name: "sched", value: "date", label: "Egyszeri", key: "date", id: "3" },
   ];
 
   numbers = Array.from({ length: 15 }, (_, index) => index + 1);
@@ -87,9 +100,9 @@ class AddTask extends Component {
 
   handleSubmit = (event) => {
     event.preventDefault();
-    console.log(this.state);
     this.props.addTask(
       this.state.table_id,
+      this.props.owner_id,
       this.state.load_type,
       this.state.task_trigger,
       this.state.task_schedule,
@@ -123,85 +136,67 @@ class AddTask extends Component {
 
   render() {
     return (
-      <div className="add-modal">
-        <form onSubmit={this.handleSubmit}>
-          <table className="task-modal-table">
-            <tbody>
-              <tr>
-                <td>Table:</td>
-                <td>
-                  <div className="task-dropdown">
-                    <DropDown
-                      options={this.state.tables}
-                      handleSelection={this.handleTableSelection}
-                    />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Load type: </td>
-                <td>
-                  <div className="radio-container">
-                    <RadioSelect
-                      handleRadioSelection={this.handleOptionChangeOne}
-                      options={this.radioOptionsOne}
-                    />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Run Type: </td>
-                <td>
-                  <div className="radio-container">
-                    <RadioSelect
-                      handleRadioSelection={this.handleOptionChangeTwo}
-                      options={this.radioOptionsTwo}
-                    />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td>Start Date: </td>
-                <td>
+      <React.Fragment>
+        <div className="mt-2 ml-2 container-fluid">
+          <div className="row justify-content-start">
+            <div className="col">
+              <form onSubmit={this.handleSubmit}>
+                <DropDown
+                  options={this.state.tables}
+                  handleSelection={this.handleTableSelection}
+                />
+                <br></br>
+                <label>Feladat típusa:</label>
+                <RadioSelect
+                  handleRadioSelection={this.handleOptionChangeOne}
+                  options={this.radioOptionsOne}
+                />
+                <br></br>
+                <label>Töltés típusa: </label>
+                <RadioSelect
+                  handleRadioSelection={this.handleOptionChangeTwo}
+                  options={this.radioOptionsTwo}
+                />
+                <br></br>
+                <label>Kezdő dátum: </label>
+                <DateTimePicker handleDateChange={this.handleStartDateChange} />
+                <br></br>
+                {this.state.task_trigger === "interval" && (
                   <div>
+                    <label>Vég dátum: </label>
                     <DateTimePicker
-                      handleDateChange={this.handleStartDateChange}
+                      handleDateChange={this.handleEndDateChange}
+                    />
+                    <br></br>
+                    <label>Gyakoriság (napok): </label>
+                    <DropDown
+                      options={this.frequencyOptions}
+                      handleSelection={this.handleFreqSelection}
                     />
                   </div>
-                </td>
-              </tr>
-              {this.state.task_trigger === "interval" ? (
-                <>
-                  <tr>
-                    <td>End Date: </td>
-                    <td>
-                      <div>
-                        <DateTimePicker
-                          handleDateChange={this.handleEndDateChange}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Frequency (days): </td>
-                    <td>
-                      <DropDown
-                        options={this.frequencyOptions}
-                        handleSelection={this.handleFreqSelection}
-                      />
-                    </td>
-                  </tr>
-                </>
-              ) : (
-                <div></div>
+                )}
+                <button
+                  type="submit"
+                  className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                >
+                  Eküld
+                </button>
+              </form>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col">
+              {this.state.showModal && (
+                <CustomAlert
+                  message={this.state.message}
+                  variant={this.state.messageVariant}
+                  handleCloseModal={this.props.toggleModal}
+                />
               )}
-            </tbody>
-          </table>
-          <button className="submit-button" type="submit">
-            Submit
-          </button>
-        </form>
-      </div>
+            </div>
+          </div>
+        </div>
+      </React.Fragment>
     );
   }
 }

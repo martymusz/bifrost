@@ -9,7 +9,6 @@ import Canvas from "../components/table/canvas";
 import RadioSelect from "../components/common/radioSelect";
 import JoinSetup from "../components/table/joinSetup";
 import Join from "../components/table/join";
-import "../css/TableSetup.css";
 
 class TableSetup extends Component {
   constructor(props) {
@@ -120,19 +119,16 @@ class TableSetup extends Component {
 
   fetchTables = async (connection_id) => {
     const token = Cookies.get("authToken");
-    await fetch(
-      `/api/connection/${connection_id}/tables`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          connection_id: connection_id,
-        }),
-      }
-    )
+    await fetch(`/api/connection/${connection_id}/tables`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        connection_id: connection_id,
+      }),
+    })
       .then(async (response) => await response.json())
       .then((data) => {
         this.setState({ tables: data }, () => {

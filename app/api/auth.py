@@ -1,4 +1,5 @@
 from flask import jsonify, request, current_app
+from app.models import db
 import jwt
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
@@ -60,20 +61,29 @@ def register():
     email = data['email']
     password = data['password']
     name = data['name']
-    role = data['role']
+
+    users = User.query.all()
 
     try:
-        new_user = User.add_new_user(email=email, password=password, name=name, role=role)
+        if len(users) == 0:
+            new_user = User.add_new_user(email=email, password=password, name=name, role=1)
+        else:
+            new_user = User.add_new_user(email=email, password=password, name=name, role=3)
+
+        db.session.add(new_user)
+        db.session.commit()
 
     except IntegrityError as e:
+        db.session.rollback()
         current_app.logger.error(
             'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User already exists')
         return jsonify({'error': 'User already exists'}), 500
 
     except Exception as e:
+        db.session.rollback()
         current_app.logger.error('Error creating user', e)
-        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + e)
-        return jsonify({'error': 'There was a problem creating user', 'message': e}), 500
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
+        return jsonify({'error': 'There was a problem creating user'}), 500
 
     else:
         current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +

@@ -12,9 +12,9 @@ class RolePopup extends Component {
   }
 
   radioOptions = [
-    { name: "roles", value: "1", label: "Administrator", key: 1 },
-    { name: "roles", value: "2", label: "Data Modeler", key: 2 },
-    { name: "roles", value: "3", label: "Analyst", key: 3 },
+    { name: "roles", value: "1", label: "Adminisztrátor", key: 1 },
+    { name: "roles", value: "2", label: "Adatmodellező", key: 2 },
+    { name: "roles", value: "3", label: "Elemző", key: 3 },
   ];
 
   handleRoleChange = (event) => {
@@ -26,25 +26,27 @@ class RolePopup extends Component {
 
   render() {
     return (
-      <div className="overlay">
-        <div className="popup">
-          <table>
-            <tbody>
-              <tr>
-                <td>
-                  <h4>Please select role:</h4>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <RadioSelect
-                    handleRadioSelection={this.handleRoleChange}
-                    options={this.radioOptions}
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="modal-background">
+        <div className="d-flex justify-content-center align-items-center">
+          <div className="popup-form-group mx-0">
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <h4>Kérlek, válassz új szerepkört!</h4>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <RadioSelect
+                      handleRadioSelection={this.handleRoleChange}
+                      options={this.radioOptions}
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );

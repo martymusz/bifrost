@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import Navigation from "../components/common/navigation";
 import Cookies from "js-cookie";
-import Table from "../components/common/table";
-import AddTask from "../components/addTask";
+import CustomTable from "../components/common/table";
+import CustomAlert from "../components/common/alert";
+import AddTask from "../components/task/addTask";
 
 class Tasks extends Component {
   constructor(props) {
@@ -10,8 +11,12 @@ class Tasks extends Component {
     this.state = {
       authenticated: false,
       tasks: [],
-      showModal: false,
       tables: [],
+      active: 5,
+      showModal: false,
+      showAlertModal: false,
+      showEditModal: false,
+      userid: "",
     };
 
     this.fetchTasks = this.fetchTasks.bind(this);
@@ -20,27 +25,31 @@ class Tasks extends Component {
   }
 
   headers = [
+    "owner_id",
     "task_id",
     "table_id",
     "load_type",
     "status",
-    "task_trigger",
+    "start_date",
     "last_run",
   ];
 
   pretty_names = [
-    "Task ID",
-    "Table ID",
-    "Load Type",
-    "Status",
-    "Run Type",
-    "Last Run",
+    "Műveletek",
+    "Tulajdonos",
+    "Feladat ID",
+    "Tábla ID",
+    "Töltés típusa",
+    "Státusz",
+    "Kezdés ideje",
+    "Utolsó futás ideje",
   ];
 
   componentDidMount() {
     const authToken = Cookies.get("authToken");
+    const userid = Cookies.get("userid");
     if (authToken) {
-      this.setState({ authenticated: true });
+      this.setState({ authenticated: true, userid: userid });
       this.fetchTasks();
     }
   }
@@ -48,6 +57,19 @@ class Tasks extends Component {
   toggleModal = () => {
     this.setState((prevState) => ({
       showModal: !prevState.showModal,
+    }));
+  };
+
+  openEditModal = (row) => {
+    this.setState((prevState) => ({
+      showEditModal: !prevState.showEditModal,
+      rowForEdit: row,
+    }));
+  };
+
+  closeEditModal = () => {
+    this.setState((prevState) => ({
+      showEditModal: !prevState.showEditModal,
     }));
   };
 
@@ -102,30 +124,107 @@ class Tasks extends Component {
       });
   };
 
+  deleteTask = (row) => {
+    const task_id = row.task_id;
+    const token = Cookies.get("authToken");
+    fetch(`/api/task/${task_id}/remove`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        task_id: task_id,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          this.setState(
+            {
+              message: "Feladat törlése sikeres!",
+              messageVariant: "success",
+              showAlert: true,
+            },
+            () => {
+              this.fetchTasks();
+            }
+          );
+        } else {
+          this.setState({
+            message: "Hiba! A feladat törlése nem sikerült!",
+            messageVariant: "danger",
+            showAlert: true,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Request failed:", error);
+      });
+  };
+
   render() {
     return (
-      <div>
+      <React.Fragment>
         {this.state.authenticated ? (
-          <React.Fragment>
-            <Navigation />
-            <button className="add-button" onClick={this.toggleModal}>
-              + Add Task
-            </button>
-            {this.state.showModal && (
-              <AddTask addTask={this.addTask} toggleModal={this.toggleModal} />
-            )}
-            <Table
-              headers={this.headers}
-              data={this.state.tasks}
-              pretty_names={this.pretty_names}
-            />
-          </React.Fragment>
+          <div className="container-fluid">
+            <div className="row align-items-center">
+              <div className="col p-0 m-0">
+                <Navigation active={this.state.active} />
+              </div>
+            </div>
+            <div className="row align-items-center">
+              <div className="col p-2">
+                {this.state.role !== "3" && (
+                  <button
+                    className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                    onClick={this.toggleModal}
+                  >
+                    + Új feladat
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="row align-items-left">
+              <div className="col">
+                {this.state.showModal && (
+                  <AddTask
+                    toggleModal={this.toggleModal}
+                    addTask={this.addTask}
+                    owner_id={this.state.userid}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="row align-items-left">
+              <div className="col">
+                {this.state.showAlert && (
+                  <CustomAlert
+                    message={this.state.message}
+                    variant={this.state.messageVariant}
+                    handleCloseModal={this.handleCloseAlert}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="row align-items-left">
+              <div className="col">
+                <CustomTable
+                  headers={this.headers}
+                  data={this.state.tasks}
+                  pretty_names={this.pretty_names}
+                  onDelete={this.deleteTask}
+                  onModify={this.openEditModal}
+                  showEditButton={false}
+                />
+              </div>
+            </div>
+          </div>
         ) : (
           <div>
             <h1>Access Denied!</h1>
           </div>
         )}
-      </div>
+      </React.Fragment>
     );
   }
 }

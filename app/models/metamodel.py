@@ -5,11 +5,13 @@ class Metamodel(db.Model):
     __tablename__ = 'metamodels'
     __table_args__ = {'schema': 'bifrost'}
 
-    metamodel_id = db.Column(db.Integer, db.Sequence('seq_metamodel'), primary_key=True, index=True)
+    sequence = db.Sequence('seq_metamodel', schema='bifrost')
+
+    metamodel_id = db.Column(db.Integer, sequence, primary_key=True, index=True)
     metamodel_name = db.Column(db.String(64), primary_key=True, index=True)
     metamodel_schema = db.Column(db.String(64))
     target_connection_id = db.Column(db.Integer, nullable=False)
-    tables = db.Column(db.String(255))
+    tables = db.Column(db.String(1000))
 
     def to_dict(self):
         return {
@@ -47,3 +49,7 @@ class Metamodel(db.Model):
     def get_by_name(metamodel_name):
         metamodel = Metamodel.query.filter_by(metamodel_name=metamodel_name)[0]
         return metamodel
+
+    def update(self, metamodel_name):
+        self.metamodel_name = metamodel_name
+        return self

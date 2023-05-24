@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import request, jsonify, current_app
+from app.models import db
 from app.middleware import login_required
 from app.models.task import Task
 from app.api import api
@@ -19,6 +20,7 @@ def get_all_tasks():
 def create_task():
     data = request.get_json()
     table_id = data['table_id']
+    owner_id = data['owner_id']
     load_type = data['load_type']
     task_trigger = data['task_trigger']
     start_date = datetime.strptime(data['start_date'], '%Y-%m-%d %H:%M')
@@ -26,23 +28,26 @@ def create_task():
         end_date = datetime.strptime(data['end_date'], '%Y-%m-%d %H:%M')
         task_schedule = int(data['task_schedule'])
     else:
-        end_date = ''
-        task_schedule = ''
+        end_date = start_date
+        task_schedule = 0
 
     try:
 
         table = Table.get_by_id(table_id=table_id)
 
     except IndexError:
-        current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Schedule - Table not found')
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                                 'Schedule - Table not found')
         return jsonify({'error': 'Table not found'}), 404
 
     else:
 
         try:
 
-            task = Task.add_new_task(table_id=table_id, load_type=load_type, task_trigger=task_trigger,
+            task = Task.add_new_task(table_id=table_id, owner_id=owner_id, load_type=load_type, task_trigger=task_trigger,
                                      task_schedule=task_schedule, start_date=start_date, end_date=end_date)
+            db.session.add(task)
+            db.session.commit()
 
             if task_trigger == "date":
 
@@ -68,35 +73,39 @@ def create_task():
                                  kwargs={'table_id': table_id, 'app': current_app._get_current_object()})
 
         except Exception as e:
-            print(e)
+            db.session.rollback()
+            current_app.logger.error(
+                'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task not created' + str(e))
+            return jsonify({'error': 'Task not created'}), 500
 
         else:
             current_app.logger.info(
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task scheduled successfully')
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task scheduled successfully')
             return jsonify({'message': 'Task scheduled successfully'}), 201
 
 
-@api.route('/task/<int:task_id>/unschedule', methods=['POST'])
+@api.route('/task/<int:task_id>/remove', methods=['POST'])
 @login_required
 def remove_scheduled_task(task_id):
     try:
         task = Task.get_by_id(task_id)
-        task.unschedule()
+        db.session.delete(task)
+        db.session.commit()
 
     except IndexError:
-        current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task not found')
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task not found')
         return jsonify({'error': 'Task not found'}), 404
 
     else:
         try:
             remove_task(task_id=str(task_id))
 
-        except Exception as e:
-            current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task unschedule error')
-            return jsonify({'error': 'Error unscheduling task'}), 500
+        except Exception:
+            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task unscheduled')
+            return jsonify({'message': 'Task unscheduled successfully'}), 201
 
         else:
-            current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task unscheduled')
+            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task unscheduled')
             return jsonify({'message': 'Task unscheduled successfully'}), 201
 
 

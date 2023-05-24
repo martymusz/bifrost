@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import jsonify, request, current_app
 from app.api import api
+from app.models import db
 from app.middleware import login_required
 from app.models.user import User
 
@@ -21,20 +22,23 @@ def change_status(userid):
         user = User.get_by_userid(userid)
 
     except IndexError:
-        current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
         return jsonify({'error': 'User not found'}), 404
 
     else:
         if data['action'] == 'deactivate':
             user.disable_account()
-            current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User:% status changed',
-                                    user.email)
+            db.session.commit()
+            current_app.logger.info(
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User:% status changed',
+                user.email)
             return jsonify({'message': 'User status changed successfully'}), 200
 
         else:
             user.enable_account()
-            current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User:% status changed',
-                                    user.email)
+            db.session.commit()
+            current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - '
+                                    + 'User status changed: ' + user.email)
             return jsonify({'message': 'User status changed successfully'}), 200
 
 
@@ -43,14 +47,58 @@ def change_status(userid):
 def change_role(userid):
     data = request.json
     try:
+        role = data['role']
         user = User.get_by_userid(userid)
 
     except IndexError:
-        current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
         return jsonify({'error': 'User not found'}), 404
 
     else:
-        user.change_role(data['role'])
-        current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User:% role changed',
+        user.change_role(role)
+        db.session.commit()
+        current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User role changed: ' +
                                 user.email)
         return jsonify({'message': 'User role changed successfully'}), 200
+
+
+@api.route('/user/<int:userid>/name', methods=['POST'])
+@login_required
+def change_name(userid):
+    data = request.json
+    try:
+        name = data["name"]
+        user = User.get_by_userid(userid)
+
+    except IndexError:
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
+        return jsonify({'error': 'User not found'}), 404
+
+    else:
+        user.change_name(name)
+        db.session.commit()
+        current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User name changed: ' +
+                                user.email)
+        return jsonify({'message': 'User name changed successfully'}), 200
+
+
+@api.route('/user/<int:userid>/password', methods=['POST'])
+@login_required
+def change_password(userid):
+    data = request.json
+    try:
+        password = data["password"]
+        user = User.get_by_userid(userid)
+
+    except IndexError:
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
+        return jsonify({'error': 'User not found'}), 404
+
+    else:
+
+        user.change_password(password)
+        db.session.commit()
+        current_app.logger.info(
+            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User password changed: ' +
+            user.email)
+        return jsonify({'message': 'User password changed successfully'}), 200

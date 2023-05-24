@@ -7,6 +7,7 @@ import Metamodels from "./pages/Metamodels";
 import Tables from "./pages/Tables";
 import TableSetup from "./pages/TableSetup";
 import Tasks from "./pages/Tasks";
+import "bootstrap/dist/css/bootstrap.css";
 import "./css/App.css";
 
 function App() {

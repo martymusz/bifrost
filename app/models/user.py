@@ -6,7 +6,9 @@ class User(db.Model):
     __tablename__ = 'users'
     __table_args__ = {'schema': 'bifrost'}
 
-    userid = db.Column(db.Integer, db.Sequence('seq_user'), primary_key=True, index=True)
+    sequence = db.Sequence('seq_user', schema='bifrost')
+
+    userid = db.Column(db.Integer, sequence, primary_key=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(64), nullable=False)
@@ -26,8 +28,6 @@ class User(db.Model):
     def add_new_user(email, password, name, role):
         new_user = User(email=email, password=hashlib.md5(password.encode()).hexdigest(), name=name, role=role,
                         active=True)
-        db.session.add(new_user)
-        db.session.commit()
         return new_user
 
     def verify_password(self, password):
@@ -35,7 +35,10 @@ class User(db.Model):
 
     def change_password(self, password):
         self.password = hashlib.md5(password.encode()).hexdigest()
-        db.session.commit()
+        return self
+
+    def change_name(self, name):
+        self.name = name
         return self
 
     @staticmethod
@@ -50,25 +53,15 @@ class User(db.Model):
 
     def disable_account(self):
         self.active = False
-        db.session.commit()
         return self
 
     def enable_account(self):
         self.active = True
-        db.session.commit()
         return self
 
     def change_role(self, role):
         self.role = role
-        db.session.commit()
         return self
-
-    @staticmethod
-    def remove_user(userid):
-        user = User.query.filter_by(userid=userid)[0]
-        if user:
-            db.session.delete(user)
-            db.session.commit()
 
     @staticmethod
     def login(email, password):

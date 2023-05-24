@@ -1,31 +1,51 @@
 import React, { Component } from "react";
-import "../../css/Table.css";
+import { Table, Button } from "react-bootstrap";
+import { AiFillDelete, AiOutlineEdit } from "react-icons/ai";
 
-class Table extends Component {
+class CustomTable extends Component {
   render() {
-    const { data, headers, pretty_names } = this.props;
-
     return (
-      <table className="general-table">
+      <Table striped bordered hover>
         <thead>
           <tr>
-            {pretty_names.map((header) => (
-              <th key={header}>{header}</th>
+            {this.props.pretty_names.map((column, index) => (
+              <th key={index}>{column}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {data.map((row, index) => (
-            <tr key={index}>
-              {headers.map((header) => (
-                <td key={header}>{row[header]} </td>
+          {this.props.data.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              <td>
+                <div className="container d-flex m-1">
+                  <Button
+                    id={rowIndex}
+                    variant="danger"
+                    className="mx-1 trash-button"
+                    onClick={() => this.props.onDelete(row)}
+                  >
+                    <AiFillDelete id={rowIndex} />
+                  </Button>
+                  {this.props.showEditButton && (
+                    <Button
+                      value={rowIndex}
+                      className="mx-1 edit-button"
+                      onClick={() => this.props.onModify(row)}
+                    >
+                      <AiOutlineEdit value={rowIndex} />
+                    </Button>
+                  )}
+                </div>
+              </td>
+              {this.props.headers.map((column) => (
+                <td key={column}>{row[column]}</td>
               ))}
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     );
   }
 }
 
-export default Table;
+export default CustomTable;

@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import Register from "../components/register";
+import Register from "../components/main/register";
+import CustomAlert from "../components/common/alert";
 
 class Main extends Component {
   constructor(props) {
@@ -28,19 +29,34 @@ class Main extends Component {
         password: this.state.password,
       }),
     })
-      .then(async (response) => await response.json())
+      .then((response) => {
+        if (!response.ok) {
+          this.setState({
+            message:
+              "Hiba! A felhasználó nem aktív, vagy a megadott e-mail/jelszó páros nem helyes!",
+            messageVariant: "danger",
+            showAlert: true,
+          });
+        }
+        return response.json();
+      })
       .then((data) => {
+        console.log(data);
         const token = data["token"];
         const role = data["user"]["role"];
         const name = data["user"]["name"];
+        const userid = data["user"]["userid"];
+        const email = data["user"]["email"];
         Cookies.set("authToken", token);
-        Cookies.set("user", name);
+        Cookies.set("name", name);
         Cookies.set("role", role);
+        Cookies.set("userid", userid);
+        Cookies.set("email", email);
         const navigate = this.props.navigate;
         navigate("/home");
       })
       .catch((error) => {
-        console.error("Authentication failed", error);
+        console.error("Request failed:", error);
       });
   };
 
@@ -57,70 +73,83 @@ class Main extends Component {
     }));
   };
 
+  handleCloseAlert = () => {
+    this.setState({ showAlert: false });
+  };
+
   render() {
     return (
       <React.Fragment>
-        <div>
-          <div className="main">
-            <span>Welcome to Bifrost!</span>
-            <br></br>
-            <span>Please login or register!</span>
-            <br></br>
+        <div className="mt-5 container">
+          <div className="row align-items-center">
+            <div className="col-sm-6">
+              <h2 className="mb-1 mt-3">Üdv, ez itt a Bifrost.</h2>
+              <h3 className="mb-3 mt-3">Kérlek jelentkezz be!</h3>
+            </div>
           </div>
-          <div className="login">
-            <table className="login-inner">
-              <tbody>
-                <tr>
-                  <td>
-                    <form onSubmit={this.loginUser}>
-                      <table>
-                        <tbody>
-                          <tr>
-                            <td>E-mail: </td>
-                            <td>
-                              <input
-                                name="email"
-                                type="email"
-                                placeholder="Email"
-                                value={this.state.email}
-                                onChange={this.handleInputChange}
-                              />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Password: </td>
-                            <td>
-                              <input
-                                name="password"
-                                type="password"
-                                placeholder="Password"
-                                value={this.state.password}
-                                onChange={this.handleInputChange}
-                              />
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                      <br></br>
-                      <button type="submit">Login</button>
-                    </form>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <button onClick={this.toggleModal}>Register</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="row align-items-center">
+            <div className="col-sm-6">
+              <div className="form-group">
+                <form>
+                  <label htmlFor="email">E-mail: </label>
+                  <input
+                    className="form-control"
+                    name="email"
+                    id="email"
+                    type="email"
+                    placeholder="E-mail"
+                    value={this.state.email}
+                    onChange={this.handleInputChange}
+                  />
+                  <br></br>
+                  <label htmlFor="password">Jelszó: </label>
+                  <input
+                    className="form-control"
+                    name="password"
+                    id="password"
+                    type="password"
+                    placeholder="Jelszó"
+                    value={this.state.password}
+                    onChange={this.handleInputChange}
+                  />
+                  <br></br>
+                  <button
+                    type="submit"
+                    className="mb-3 mx-2 btn btn-primary d-none d-md-block cornflowerblue"
+                    onClick={this.loginUser}
+                  >
+                    Bejelentkezés
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
-        </div>
-        <div>
-          {this.state.showModal ? (
-            <Register toggleModal={this.toggleModal} />
-          ) : (
-            <div></div>
-          )}
+          <div className="col-sm-6">
+            {this.state.showAlert && (
+              <CustomAlert
+                message={this.state.message}
+                variant={this.state.messageVariant}
+                handleCloseModal={this.handleCloseAlert}
+              />
+            )}
+          </div>
+          <div className="row align-items-center">
+            <div className="col-sm-6">
+              <button
+                className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                onClick={this.toggleModal}
+              >
+                Regisztráció
+              </button>
+            </div>
+          </div>
+          <div className="row align-items-center">
+            <div className="col-sm-6">
+              {this.state.showModal && (
+                <Register toggleModal={this.toggleModal} />
+              )}
+            </div>
+          </div>
         </div>
       </React.Fragment>
     );

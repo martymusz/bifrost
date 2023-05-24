@@ -17,6 +17,8 @@ def create_app():
 
     app.config.from_pyfile('config.py')
 
+
+
     db.init_app(app)
     scheduler.init_app(app)
     scheduler.start()

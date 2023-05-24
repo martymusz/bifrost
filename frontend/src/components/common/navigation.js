@@ -1,105 +1,69 @@
 import React, { Component } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import "../../css/Navigation.css";
+import "../../css/Navbar.css";
 
 class Navigation extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      active: "",
       role: "",
       tabs_admin: [
-        { id: 0, value: "Logout" },
-        { id: 1, value: "Home" },
-        { id: 2, value: "Connections" },
-        { id: 3, value: "Metamodels" },
-        { id: 4, value: "Tables" },
-        { id: 5, value: "Tasks" },
-        { id: 6, value: "User Admin" },
+        { id: 1, value: "Főoldal", link: "/home" },
+        { id: 2, value: "Kapcsolatok", link: "/connections" },
+        { id: 3, value: "Metamodellek", link: "/metamodels" },
+        { id: 4, value: "Adattáblák", link: "/tables" },
+        { id: 5, value: "Töltések", link: "/tasks" },
+        { id: 6, value: "Felhasználók", link: "/users" },
       ],
 
-      tabs_other: [
-        { id: 0, value: "Logout" },
-        { id: 1, value: "Home" },
-        { id: 2, value: "Connections" },
-        { id: 3, value: "Metamodels" },
-        { id: 4, value: "Tables" },
-        { id: 5, value: "Tasks" },
+      tabs: [
+        { id: 1, value: "Főoldal", link: "/home" },
+        { id: 2, value: "Kapcsolatok", link: "/connections" },
+        { id: 3, value: "Metamodellek", link: "/metamodels" },
+        { id: 4, value: "Adattáblák", link: "/tables" },
+        { id: 5, value: "Töltések", link: "/tasks" },
       ],
     };
-    this.navigateToPage = this.navigateToPage.bind(this);
-    this.handleLogout = this.handleLogout.bind(this);
   }
 
   componentDidMount() {
+    const active = this.props.active;
     const role = Cookies.get("role");
-    this.setState({ role: role });
-  }
-
-  handleLogout() {
-    Cookies.remove("authToken");
-  }
-
-  navigateToPage(menuItem) {
-    const navigate = this.props.navigate;
-    if (menuItem === 0) {
-      this.handleLogout();
-      navigate("/");
-    } else if (menuItem === 1) {
-      navigate("/home");
-    } else if (menuItem === 2) {
-      navigate("/connections");
-    } else if (menuItem === 3) {
-      navigate("/metamodels");
-    } else if (menuItem === 4) {
-      navigate("/tables");
-    } else if (menuItem === 5) {
-      navigate("/tasks");
-    } else if (menuItem === 6) {
-      navigate("/users");
-    } else {
-      console.log(menuItem);
-    }
+    this.setState({ role: role, active: active });
   }
 
   render() {
     return (
-      <div className="navigation">
-        {this.state.role === 1 ? (
-          <div>
-            {this.state.tabs_admin.map((tab) => (
+      <React.Fragment>
+        <nav className="navbar navbar-expand-lg p-0">
+          <ul className="navbar-nav p-0">
+            {this.state.tabs_admin.map((tab, index) => (
               <li
-                className={
-                  tab.id === 0 ? "navigation-right" : "navigation-left"
-                }
-                key={tab.id}
-                onClick={() => this.navigateToPage(tab.id)}
+                className={`nav-item mx-2${
+                  tab.id === this.state.active ? " active" : ""
+                }`}
+                key={index}
               >
-                {tab.value}
+                <Link
+                  to={tab.link}
+                  className={`nav-link mx-2${
+                    tab.id === this.state.active ? " active" : ""
+                  }`}
+                >
+                  {tab.value}
+                </Link>
               </li>
             ))}
-          </div>
-        ) : (
-          <div>
-            {this.state.tabs_other.map((tab) => (
-              <li
-                className={
-                  tab.id === 0 ? "navigation-right" : "navigation-left"
-                }
-                key={tab.id}
-                onClick={() => this.navigateToPage(tab.id)}
-              >
-                {tab.value}
-              </li>
-            ))}
-          </div>
-        )}
-      </div>
+            <Link to="/" className="nav-link mx-2">
+              Kijelentkezés
+            </Link>
+          </ul>
+        </nav>
+      </React.Fragment>
     );
   }
 }
 
-export default function Wrapper() {
-  const navigate = useNavigate();
-  return <Navigation navigate={navigate} />;
-}
+export default Navigation;

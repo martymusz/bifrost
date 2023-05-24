@@ -18,26 +18,25 @@ class RadioSelect extends Component {
   render() {
     return (
       <React.Fragment>
-        <table className="radioselect">
-          <tbody>
-            <tr>
-              {this.props.options.map((option) => (
-                <td key={option.key}>
-                  <input
-                    type="radio"
-                    name={option.name}
-                    value={option.value}
-                    id={option.key}
-                    key={option.key}
-                    checked={this.state.selectedValue === option.value}
-                    onChange={this.handleChange}
-                  />
-                  <label htmlFor={option.label}>{option.label}</label>
-                </td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
+        <div className="radio-select">
+          <div className="pl-2"></div>
+          {this.props.options.map((option, index) => (
+            <div className="form-check-inline" key={index}>
+              <input
+                className="form-check-input"
+                type="radio"
+                name="radioSelect"
+                id={option.id}
+                value={option.value}
+                checked={this.state.selectedValue === option.value}
+                onChange={this.handleChange}
+              />
+              <label className="form-check-label" htmlFor={option.id}>
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
       </React.Fragment>
     );
   }

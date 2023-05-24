@@ -24,7 +24,7 @@ class DateTimePicker extends Component {
           timeFormat="HH:mm"
           timeIntervals={15}
           dateFormat="yyyy-MM-dd HH:ss"
-          placeholderText="Select Date and Time"
+          placeholderText="Kérlek válassz dátumot!"
         />
       </div>
     );
