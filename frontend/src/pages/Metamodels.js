@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import Cookies from "js-cookie";
 import Navigation from "../components/common/navigation";
-import CustomTable from "../components/common/table";
-import AddMetamodel from "../components/metamodel/addMetamodel";
+import CustomTable from "../components/common/customTable";
+import AddMetamodel from "../components/metamodels/addMetamodel";
 import CustomAlert from "../components/common/alert";
-import PopupFormMetamodel from "../components/metamodel/changeMetamodel";
+import ChangeMetamodel from "../components/metamodels/changeMetamodel";
 
 class Metamodels extends Component {
   constructor(props) {
@@ -111,6 +111,59 @@ class Metamodels extends Component {
       });
   };
 
+  addMetamodel = (metamodel_name, metamodel_schema, target_connection_id) => {
+    const token = Cookies.get("authToken");
+    fetch("/api/metamodels/add", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        metamodel_name: metamodel_name,
+        metamodel_schema: metamodel_schema,
+        target_connection_id: target_connection_id,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          this.setState(
+            {
+              message: "Metamodell sikeresen hozzáadva!",
+              messageVariant: "success",
+              showModal: true,
+            },
+            () => {
+              this.setState(
+                {
+                  metamodel_name: "",
+                  metamodel_schema: "",
+                  target_connection_id: "0",
+                },
+                () => {
+                  this.fetchMetamodels();
+                }
+              );
+            }
+          );
+        } else {
+          this.setState(
+            {
+              message: "Hiba! Metamodellt nem sikerült hozzáadni!",
+              messageVariant: "danger",
+              showModal: true,
+            },
+            () => {
+              this.fetchMetamodels();
+            }
+          );
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   deleteMetamodel = (row) => {
     const metamodel_id = row.metamodel_id;
     const token = Cookies.get("authToken");
@@ -198,7 +251,7 @@ class Metamodels extends Component {
       <React.Fragment>
         <div>
           {this.state.showEditModal && (
-            <PopupFormMetamodel
+            <ChangeMetamodel
               row={this.state.rowForEdit}
               modifyMetamodel={this.modifyMetamodel}
               closeEditModal={this.closeEditModal}
@@ -231,7 +284,7 @@ class Metamodels extends Component {
                     addConnection={this.addConnection}
                     toggleModal={this.toggleModal}
                     connections={this.state.connections}
-                    fetchMetamodels={this.fetchMetamodels}
+                    addMetamodel={this.addMetamodel}
                   />
                 )}
               </div>
@@ -256,6 +309,7 @@ class Metamodels extends Component {
                   onDelete={this.deleteMetamodel}
                   onModify={this.openEditModal}
                   showEditButton={true}
+                  showDeleteButton={true}
                 />
               </div>
             </div>

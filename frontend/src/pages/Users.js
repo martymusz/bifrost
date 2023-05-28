@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Navigation from "../components/common/navigation";
 import Cookies from "js-cookie";
-import UsersTable from "../components/user/usersTable";
+import UsersTable from "../components/users/usersTable";
 
 class Users extends Component {
   constructor(props) {
@@ -9,7 +9,7 @@ class Users extends Component {
     this.state = {
       authenticated: false,
       data: [],
-      active: 6
+      active: 6,
     };
 
     this.fetchUsers = this.fetchUsers.bind(this);
@@ -105,23 +105,31 @@ class Users extends Component {
 
   render() {
     return (
-      <div>
+      <React.Fragment>
         {this.state.authenticated ? (
-          <React.Fragment>
-            <Navigation />
-            <UsersTable
-              users={this.state.data}
-              changeStatus={this.changeStatus}
-              changeRole={this.changeRole}
-              addUser={this.addUser}
-            />
-          </React.Fragment>
+          <div className="container-fluid">
+            <div className="row align-items-center">
+              <div className="col p-0 m-0">
+                <Navigation active={this.state.active} />
+              </div>
+            </div>
+            <div className="row align-items-center">
+              <div className="col p-2">
+                <UsersTable
+                  users={this.state.data}
+                  changeStatus={this.changeStatus}
+                  changeRole={this.changeRole}
+                  addUser={this.addUser}
+                />
+              </div>
+            </div>
+          </div>
         ) : (
           <div>
             <h1>Access Denied!</h1>
           </div>
         )}
-      </div>
+      </React.Fragment>
     );
   }
 }

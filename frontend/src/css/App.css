@@ -19,6 +19,22 @@ code {
   font-family: "RedhatFont",
 }
 
+.navbar {
+  background-color: cornflowerblue;
+}
+
+.navbar-nav .nav-link {
+  color: white;
+  font-size: larger;
+  background-color: cornflowerblue;
+}
+
+.navbar-nav .nav-link.active {
+  color: cornflowerblue;
+  background-color: white;
+
+}
+
 .nav-link:hover {
   color: coral;
 }
@@ -70,8 +86,10 @@ code {
   background-color:gainsboro;
 }
 
-.dropdown-metamodel {
-  width: fit-content;
+.dropdown {
+  width: fit-content !important;
+  margin-right: 2%;
+  margin-bottom: 1%;
 }
 
 .deact-button {
@@ -137,3 +155,4 @@ code {
   cursor: pointer;
   border-color: cornflowerblue;
 }
+

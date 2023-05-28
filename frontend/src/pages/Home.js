@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import Cookies from "js-cookie";
 import Navigation from "../components/common/navigation";
-import CustomTable from "../components/common/table";
+import CustomTable from "../components/common/customTable";
 import CustomAlert from "../components/common/alert";
-import PopupFormUserName from "../components/main/changeUser";
-import PopupFormUserPsw from "../components/main/changePsw";
-import ProfileTable from "../components/main/profile";
+import ChangeName from "../components/home/changeName";
+import ChangePsw from "../components/home/changePsw";
+import ProfileTable from "../components/home/profile";
 
 class Home extends Component {
   constructor(props) {
@@ -37,7 +37,6 @@ class Home extends Component {
   ];
 
   pretty_names = [
-    "Műveletek",
     "Tulajdonos",
     "Feladat ID",
     "Tábla ID",
@@ -177,20 +176,20 @@ class Home extends Component {
       <React.Fragment>
         <div>
           {this.state.showEditModalName && (
-            <PopupFormUserName
+            <ChangeName
               closeModal={this.closeModal}
               handleSubmit={this.handleSubmit}
             />
           )}
           {this.state.showEditModalPsw && (
-            <PopupFormUserPsw
+            <ChangePsw
               closeModal={this.closeModal}
               handleSubmit={this.handleSubmit}
             />
           )}
         </div>
         {this.state.authenticated ? (
-          <div className="container-fluid">
+          <div className="container-fluid" data-testid="home">
             <div className="row align-items-center">
               <div className="col p-0 m-0">
                 <Navigation active={this.state.active} />

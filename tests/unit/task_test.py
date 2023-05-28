@@ -1,10 +1,9 @@
 from datetime import datetime
-
 from app.models import Task
 
 
 def test_new_task():
-    task = Task.add_new_task(table_id=1, load_type='load_type', task_trigger='task_trigger',
+    task = Task.add_new_task(table_id=1, owner_id=1, load_type='load_type', task_trigger='task_trigger',
                              task_schedule='task_schedule',
                              start_date=datetime.strptime('9999-12-30 00:00', '%Y-%m-%d %H:%M'),
                              end_date=datetime.strptime('9999-12-31 00:00', '%Y-%m-%d %H:%M'))
@@ -19,7 +18,7 @@ def test_new_task():
 
 
 def test_modify_status():
-    task = Task.add_new_task(table_id=1, load_type='load_type', task_trigger='task_trigger',
+    task = Task.add_new_task(table_id=1, owner_id=1, load_type='load_type', task_trigger='task_trigger',
                              task_schedule='task_schedule',
                              start_date=datetime.strptime('9999-12-30 00:00', '%Y-%m-%d %H:%M'),
                              end_date=datetime.strptime('9999-12-31 00:00', '%Y-%m-%d %H:%M'))
@@ -28,7 +27,7 @@ def test_modify_status():
 
 
 def test_modify_last_run():
-    task = Task.add_new_task(table_id=1, load_type='load_type', task_trigger='task_trigger',
+    task = Task.add_new_task(table_id=1, owner_id=1, load_type='load_type', task_trigger='task_trigger',
                              task_schedule='task_schedule',
                              start_date=datetime.strptime('9999-12-30 00:00', '%Y-%m-%d %H:%M'),
                              end_date=datetime.strptime('9999-12-31 00:00', '%Y-%m-%d %H:%M'))
@@ -37,7 +36,7 @@ def test_modify_last_run():
 
 
 def test_modify_start_date():
-    task = Task.add_new_task(table_id=1, load_type='load_type', task_trigger='task_trigger',
+    task = Task.add_new_task(table_id=1, owner_id=1, load_type='load_type', task_trigger='task_trigger',
                              task_schedule='task_schedule',
                              start_date=datetime.strptime('9999-12-30 00:00', '%Y-%m-%d %H:%M'),
                              end_date=datetime.strptime('9999-12-31 00:00', '%Y-%m-%d %H:%M'))
@@ -46,7 +45,7 @@ def test_modify_start_date():
 
 
 def test_modify_end_date():
-    task = Task.add_new_task(table_id=1, load_type='load_type', task_trigger='task_trigger',
+    task = Task.add_new_task(table_id=1, owner_id=1, load_type='load_type', task_trigger='task_trigger',
                              task_schedule='task_schedule',
                              start_date=datetime.strptime('9999-12-30 00:00', '%Y-%m-%d %H:%M'),
                              end_date=datetime.strptime('9999-12-31 00:00', '%Y-%m-%d %H:%M'))

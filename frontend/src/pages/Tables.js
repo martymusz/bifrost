@@ -2,9 +2,9 @@ import React, { Component } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import Navigation from "../components/common/navigation";
-import CustomTable from "../components/common/table";
+import CustomTable from "../components/common/customTable";
 import CustomAlert from "../components/common/alert";
-import PopupFormTable from "../components/table/changeTable";
+import PopupFormTable from "../components/tables/changeTable";
 
 class Tables extends Component {
   constructor(props) {
@@ -218,6 +218,7 @@ class Tables extends Component {
                   onDelete={this.deleteTable}
                   onModify={this.openEditModal}
                   showEditButton={true}
+                  showDeleteButton={true}
                 />
               </div>
             </div>

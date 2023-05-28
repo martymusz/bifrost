@@ -28,7 +28,7 @@ def add_metamodel():
         db.session.add(new_metamodel)
         db.session.commit()
         target = Connection.get_by_id(data['target_connection_id'])
-        engine = db.get_engine(bind_key=target.bind_key)
+        engine = db.engines[target.bind_key]
         create_schema = DDL(f"CREATE SCHEMA IF NOT EXISTS {data['metamodel_schema']}")
 
         with engine.connect() as connection:
@@ -53,7 +53,7 @@ def add_metamodel():
     else:
         current_app.logger.info('INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
                                 'Metamodel created successfully')
-        return jsonify({'message': 'Metamodel created successfully', 'Model': new_metamodel.to_dict()}), 200
+        return jsonify({'message': 'Metamodel created successfully', 'data': new_metamodel.to_dict()}), 200
 
 
 @api.route('/metamodel/<int:metamodel_id>/remove', methods=['POST'])

@@ -4,7 +4,7 @@ class RadioSelect extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedValue: "0",
+      selectedValue: "",
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -19,13 +19,11 @@ class RadioSelect extends Component {
     return (
       <React.Fragment>
         <div className="radio-select">
-          <div className="pl-2"></div>
           {this.props.options.map((option, index) => (
             <div className="form-check-inline" key={index}>
               <input
-                className="form-check-input"
+                className="form-check-input mx-2 py-2"
                 type="radio"
-                name="radioSelect"
                 id={option.id}
                 value={option.value}
                 checked={this.state.selectedValue === option.value}
@@ -42,5 +40,3 @@ class RadioSelect extends Component {
   }
 }
 export default RadioSelect;
-
-//

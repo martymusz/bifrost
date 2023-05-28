@@ -10,8 +10,9 @@ class DateTimePicker extends Component {
     };
   }
 
-  handleDateChange = (date) => {
-    this.props.handleDateChange(date);
+  handleDateChange = (selectedDate) => {
+    this.setState({ selectedDate: selectedDate });
+    this.props.handleDateChange(selectedDate);
   };
 
   render() {
@@ -20,10 +21,10 @@ class DateTimePicker extends Component {
         <DatePicker
           selected={this.state.selectedDate}
           onChange={this.handleDateChange}
+          dateFormat="Pp"
           showTimeSelect
-          timeFormat="HH:mm"
-          timeIntervals={15}
-          dateFormat="yyyy-MM-dd HH:ss"
+          timeFormat="p"
+          timeIntervals={10}
           placeholderText="Kérlek válassz dátumot!"
         />
       </div>

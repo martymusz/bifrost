@@ -20,15 +20,17 @@ class DropDown extends Component {
       selectedValue: selectedValue,
       selectedLabel: selectedLabel,
     });
-    console.log(selectedValue);
     this.props.handleSelection(selectedValue);
   };
 
   render() {
     return (
-      <Dropdown onSelect={this.handleSelectionChange}>
+      <Dropdown
+        onSelect={this.handleSelectionChange}
+        className={this.props.className}
+      >
         <Dropdown.Toggle variant="primary cornflowerblue" id="dropdown-basic">
-          {this.state.selectedLabel || "Kapcsolat"}
+          {this.state.selectedLabel || this.props.display}
         </Dropdown.Toggle>
         <Dropdown.Menu>
           {this.props.options.map((option) => (

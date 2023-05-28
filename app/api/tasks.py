@@ -81,7 +81,7 @@ def create_task():
         else:
             current_app.logger.info(
                 'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Task scheduled successfully')
-            return jsonify({'message': 'Task scheduled successfully'}), 201
+            return jsonify({'message': 'Task scheduled successfully', 'data': task.to_dict()}), 201
 
 
 @api.route('/task/<int:task_id>/remove', methods=['POST'])

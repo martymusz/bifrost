@@ -102,3 +102,23 @@ def change_password(userid):
             'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User password changed: ' +
             user.email)
         return jsonify({'message': 'User password changed successfully'}), 200
+
+
+@api.route('/user/<int:userid>/remove', methods=['POST'])
+@login_required
+def remove_userid(userid):
+    data = request.json
+    try:
+        user = User.get_by_userid(userid)
+
+    except IndexError:
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User not found')
+        return jsonify({'error': 'User not found'}), 404
+
+    else:
+        db.session.delete(user)
+        db.session.commit()
+        current_app.logger.info(
+            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'User deleted' +
+            user.email)
+        return jsonify({'message': 'User deleted successfully'}), 201

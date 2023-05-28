@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import Navigation from "../components/common/navigation";
 import Cookies from "js-cookie";
-import CustomTable from "../components/common/table";
-import AddConnection from "../components/connection/addConnection";
+import CustomTable from "../components/common/customTable";
+import AddConnection from "../components/connections/addConnection";
 import CustomAlert from "../components/common/alert";
-import PopupFormConnection from "../components/connection/changeConnection";
+import ChangeConnection from "../components/connections/changeConnection";
 
 class Connections extends Component {
   constructor(props) {
@@ -94,6 +94,69 @@ class Connections extends Component {
           database_uri: item.database_uri,
         }));
         this.setState({ connections: connections });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  addConnection = (
+    bind_key,
+    database_uri,
+    database_name,
+    default_schema,
+    driver_name
+  ) => {
+    const token = Cookies.get("authToken");
+    fetch("/api/connections/add", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bind_key: bind_key,
+        database_uri: database_uri,
+        database_name: database_name,
+        default_schema: default_schema,
+        driver_name: driver_name,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          this.setState(
+            {
+              message: "Kapcsolat sikeresen hozzáadva!",
+              messageVariant: "success",
+              showModal: true,
+            },
+            () => {
+              this.setState(
+                {
+                  bind_key: "",
+                  database_uri: "",
+                  database_name: "",
+                  default_schema: "",
+                  driver_name: "",
+                },
+                () => {
+                  this.props.fetchConnections();
+                }
+              );
+            }
+          );
+        } else {
+          this.setState(
+            {
+              message: "Hiba! Kapcsolatot nem sikerült hozzáadni!",
+              messageVariant: "danger",
+              showModal: true,
+            },
+            () => {
+              this.props.fetchConnections();
+            }
+          );
+        }
       })
       .catch((error) => {
         console.error(error);
@@ -196,7 +259,7 @@ class Connections extends Component {
       <React.Fragment>
         <div>
           {this.state.showEditModal && (
-            <PopupFormConnection
+            <ChangeConnection
               row={this.state.rowForEdit}
               modifyConnection={this.modifyConnection}
               closeEditModal={this.closeEditModal}
@@ -228,6 +291,7 @@ class Connections extends Component {
                   <AddConnection
                     fetchConnections={this.fetchConnections}
                     toggleModal={this.toggleModal}
+                    addConnection={this.addConnection}
                   />
                 )}
               </div>
@@ -252,6 +316,7 @@ class Connections extends Component {
                   onDelete={this.deleteConnection}
                   onModify={this.openEditModal}
                   showEditButton={true}
+                  showDeleteButton={true}
                 />
               </div>
             </div>

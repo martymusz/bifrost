@@ -21,7 +21,8 @@ def create_task_executed(app):
             task.modify_status("Successful")
             db.session.commit()
             current_app.logger.info(
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Job %j executed successfully', task_id)
+                'INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Job ' + task_id
+                + ' executed successfully')
     return task_executed
 
 
@@ -36,8 +37,8 @@ def create_task_failed(app):
             db.session.commit()
             print(event.scheduled_run_time, last_run_time, event.exception, task.to_dict())
             current_app.logger.error(
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Job %j failed to execute - %e.', task_id,
-                event.exception)
+                'ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Job ' + task_id
+                + ' failed to execute ' + event.exception)
     return task_error
 
 
@@ -51,11 +52,13 @@ def remove_task(task_id):
 
 def scheduled_load_job(table_id, app):
     with app.app_context():
-        current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled load - Job triggered')
+        current_app.logger.info('INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled load - Job triggered')
         try:
             table = Table.get_by_id(table_id=table_id)
 
         except IndexError:
+            current_app.logger.info(
+                'ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled load - Table not found')
             return jsonify({'message': 'Table not found'}), 404
 
         else:
@@ -65,7 +68,7 @@ def scheduled_load_job(table_id, app):
             target_connection = Connection.get_by_id(connection_id=metamodel.target_connection_id)
             target_engine = db.get_engine(bind_key=target_connection.bind_key)
             full_table_name = metamodel.metamodel_schema + '.' + table.table_name
-            target_sql = sqlmapper(full_table_name)
+            target_sql = sqlmapper(source_table=full_table_name, columns=[], joins=[], filters=[])
 
         try:
             if table.table_type == 'dimension' and table.dimension_type == 'versioned':
@@ -84,28 +87,30 @@ def scheduled_load_job(table_id, app):
                                target_table=table.table_name)
 
         except ConnectionError:
-            current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+            current_app.logger.error('ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
                                      'Load failed due to connection issues')
             return jsonify({'message': 'Load failed due to connection issues'}), 500
 
         except Exception as e:
-            current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+            current_app.logger.error('ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
                                      'Load failed due to server error' + str(e))
             return jsonify({'message': 'Load failed due to server error'}), 500
 
         else:
             current_app.logger.info(
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table loaded successfully')
+                'INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table loaded successfully')
             return jsonify({'message': 'Load completed successfully'}), 201
 
 
 def scheduled_init_job(table_id, app):
     with app.app_context():
-        current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled init - Job triggered')
+        current_app.logger.info('INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled init - Job triggered')
         try:
             table = Table.get_by_id(table_id=table_id)
 
         except IndexError:
+            current_app.logger.info(
+                'ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Scheduled load - Table not found')
             return jsonify({'message': 'Table not found'}), 404
 
         else:
@@ -137,18 +142,18 @@ def scheduled_init_job(table_id, app):
                                    target_table=table.table_name)
 
             except ConnectionError:
-                current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                current_app.logger.error('ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
                                          'Load failed due to connection issues')
                 return jsonify({'message': 'Load failed due to connection issues'}), 500
 
             except Exception as e:
-                current_app.logger.error(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                current_app.logger.error('ERROR ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
                                          'Load failed due to server error' + str(e))
                 return jsonify({'message': 'Load failed due to server error'}), 500
 
             else:
                 current_app.logger.info(
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table loaded successfully')
+                    'INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table loaded successfully')
                 return jsonify({'message': 'Load completed successfully'}), 201
 
 

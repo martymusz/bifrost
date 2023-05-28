@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import Navigation from "../components/common/navigation";
 import Cookies from "js-cookie";
-import CustomTable from "../components/common/table";
+import CustomTable from "../components/common/customTable";
 import CustomAlert from "../components/common/alert";
-import AddTask from "../components/task/addTask";
+import AddTask from "../components/tasks/addTask";
 
 class Tasks extends Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class Tasks extends Component {
       tables: [],
       active: 5,
       showModal: false,
-      showAlertModal: false,
+      showAlert: false,
       showEditModal: false,
       userid: "",
     };
@@ -37,7 +37,7 @@ class Tasks extends Component {
   pretty_names = [
     "Műveletek",
     "Tulajdonos",
-    "Feladat ID",
+    "Töltés ID",
     "Tábla ID",
     "Töltés típusa",
     "Státusz",
@@ -93,6 +93,7 @@ class Tasks extends Component {
 
   addTask = (
     table_id,
+    owner_id,
     load_type,
     task_trigger,
     task_schedule,
@@ -108,6 +109,7 @@ class Tasks extends Component {
       },
       body: JSON.stringify({
         table_id: table_id,
+        owner_id: owner_id,
         load_type: load_type,
         task_trigger: task_trigger,
         task_schedule: task_schedule,
@@ -115,12 +117,29 @@ class Tasks extends Component {
         end_date: end_date,
       }),
     })
-      .catch((error) => {
-        console.error(error);
+      .then((response) => {
+        if (response.ok) {
+          this.toggleModal();
+          this.setState(
+            {
+              message: "Töltés hozzáadása sikeres!",
+              messageVariant: "success",
+              showAlert: true,
+            },
+            () => {
+              this.fetchTasks();
+            }
+          );
+        } else {
+          this.setState({
+            message: "Hiba! A töltés hozzáadása nem sikerült!",
+            messageVariant: "danger",
+            showAlert: true,
+          });
+        }
       })
-      .then(this.fetchTasks)
       .catch((error) => {
-        console.error(error);
+        console.error("Request failed:", error);
       });
   };
 
@@ -141,7 +160,7 @@ class Tasks extends Component {
         if (response.ok) {
           this.setState(
             {
-              message: "Feladat törlése sikeres!",
+              message: "Töltés törlése sikeres!",
               messageVariant: "success",
               showAlert: true,
             },
@@ -151,7 +170,7 @@ class Tasks extends Component {
           );
         } else {
           this.setState({
-            message: "Hiba! A feladat törlése nem sikerült!",
+            message: "Hiba! A töltés törlése nem sikerült!",
             messageVariant: "danger",
             showAlert: true,
           });
@@ -179,7 +198,7 @@ class Tasks extends Component {
                     className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
                     onClick={this.toggleModal}
                   >
-                    + Új feladat
+                    + Új töltés
                   </button>
                 )}
               </div>
@@ -190,7 +209,6 @@ class Tasks extends Component {
                   <AddTask
                     toggleModal={this.toggleModal}
                     addTask={this.addTask}
-                    owner_id={this.state.userid}
                   />
                 )}
               </div>
@@ -215,6 +233,7 @@ class Tasks extends Component {
                   onDelete={this.deleteTask}
                   onModify={this.openEditModal}
                   showEditButton={false}
+                  showDeleteButton={true}
                 />
               </div>
             </div>

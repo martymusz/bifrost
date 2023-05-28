@@ -7,7 +7,7 @@ class CustomAlert extends Component {
       <div>
         <Alert
           variant={this.props.variant}
-          onClose={this.props.handleCloseModal}
+          onClose={this.props.handleCloseAlert}
           dismissible
         >
           {this.props.message}

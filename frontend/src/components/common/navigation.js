@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
-import "../../css/Navbar.css";
 
 class Navigation extends Component {
   constructor(props) {
@@ -35,11 +34,14 @@ class Navigation extends Component {
   }
 
   render() {
+    const tabs =
+      this.state.role === "1" ? this.state.tabs_admin : this.state.tabs;
+
     return (
       <React.Fragment>
         <nav className="navbar navbar-expand-lg p-0">
           <ul className="navbar-nav p-0">
-            {this.state.tabs_admin.map((tab, index) => (
+            {tabs.map((tab, index) => (
               <li
                 className={`nav-item mx-2${
                   tab.id === this.state.active ? " active" : ""

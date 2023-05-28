@@ -1,5 +1,5 @@
 def get_auth_token(client):
-    response = client.post('api/login', json={'email': 'nyuszika@gmail.com', 'password': 'psw'})
+    response = client.post('api/login', json={'email': 'teszt_email@gmail.com', 'password': 'psw'})
     token = response.json['token']
     return token
 
@@ -23,16 +23,14 @@ def test_change_user_not_exists(client):
     assert response.json['error'] == 'User not found'
 
 
-def test_change_status_deact(client):
+def test_change_status(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/user/1/status', headers=headers, json={'action': 'deactivate'})
+    response = client.post('/api/user/2/status', headers=headers, json={'action': 'deactivate'})
     assert response.status_code == 200
     assert response.json['message'] == 'User status changed successfully'
 
-
-def test_change_status_act(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/user/1/status', headers=headers, json={'action': 'activate'})
+    response = client.post('/api/user/2/status', headers=headers, json={'action': 'activate'})
     assert response.status_code == 200
     assert response.json['message'] == 'User status changed successfully'
 

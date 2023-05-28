@@ -4,11 +4,11 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Navigation from "../components/common/navigation";
 import DropDown from "../components/common/dropDown";
-import ColumnTree from "../components/table/columnsTree";
-import Canvas from "../components/table/canvas";
+import ColumnTree from "../components/tableSetup/columnTree";
+import Canvas from "../components/tableSetup/canvas";
 import RadioSelect from "../components/common/radioSelect";
-import JoinSetup from "../components/table/joinSetup";
-import Join from "../components/table/join";
+import JoinSetup from "../components/tableSetup/joinSetup";
+import Join from "../components/tableSetup/join";
 
 class TableSetup extends Component {
   constructor(props) {
@@ -58,8 +58,8 @@ class TableSetup extends Component {
   ];
 
   dimOptions = [
-    { name: "dimtype", value: "noversion", label: "No History", key: 0 },
-    { name: "dimtype", value: "versioned", label: "Historization", key: 1 },
+    { name: "dimtype", value: "noversion", label: "No History", key: 3 },
+    { name: "dimtype", value: "versioned", label: "Historization", key: 4 },
   ];
 
   componentDidMount() {
@@ -225,81 +225,6 @@ class TableSetup extends Component {
     });
   };
 
-  joins_sample = [
-    {
-      condition: "dolgozo_fizetes=fiz_kategoria_kategoria",
-      join_type: "1",
-      joined_table: "fiz",
-      table_name: "dolgozo",
-    },
-
-    {
-      condition: "fiz_kategoria_also=dolgozo_fizetes",
-      join_type: "1",
-      joined_table: "dolgozo",
-      table_name: "fiz",
-    },
-
-    {
-      condition: "osztaly_telephely=osztaly_telephely",
-      join_type: "1",
-      joined_table: "osztaly",
-      table_name: "osztaly",
-    },
-    {
-      condition: "dolgozo_dnev=osztaly_oazon",
-      join_type: "1",
-      joined_table: "osztaly",
-      table_name: "dolgozo",
-    },
-    {
-      condition: "fiz_kategoria_also=dolgozo_foglalkozas",
-      join_type: "1",
-      joined_table: "dolgozo",
-      table_name: "fiz",
-    },
-    {
-      condition: "dolgozo_oazon=osztaly_oazon",
-      join_type: "1",
-      joined_table: "osztaly",
-      table_name: "dolgozo",
-    },
-    {
-      condition: "fiz_kategoria=osztaly_oazon",
-      join_type: "1",
-      joined_table: "fiz",
-      table_name: "osztaly",
-    },
-
-    {
-      condition: "fiz_kategoria=osztaly_oazon",
-      join_type: "1",
-      joined_table: "osztaly",
-      table_name: "fiz",
-    },
-  ];
-
-  joins_sample2 = [
-    {
-      condition: "fiz_kategoria_also<dolgozo_fizetes",
-      join_type: "1",
-      joined_table: "dolgozo",
-      table_name: "fiz",
-    },
-    {
-      condition: "fiz_kategoria_felso>dolgozo_fizetes",
-      join_type: "1",
-      joined_table: "dolgozo",
-      table_name: "fiz",
-    },
-    {
-      condition: "osztaly_oazon=dolgozo_oazon",
-      join_type: "1",
-      joined_table: "dolgozo",
-      table_name: "osztaly",
-    },
-  ];
-
   addTable = () => {
     const joins_processed = [];
     const array = this.state.joins;
@@ -415,6 +340,7 @@ class TableSetup extends Component {
       () => console.log(this.state)
     );
 
+    /*
     const token = Cookies.get("authToken");
     fetch("http://127.0.0.1:5000/api/tables/add", {
       method: "POST",
@@ -440,168 +366,125 @@ class TableSetup extends Component {
       .catch((error) => {
         console.error(error);
       });
+  */
   };
 
   render() {
     return (
-      <div>
-        {this.state.authenticated ? (
-          <React.Fragment>
-            <DndProvider backend={HTML5Backend}>
-              <Navigation />
-              <table className="table-setup">
-                <tbody>
-                  <tr className="tr1">
-                    <td className="td1">
-                      <table className="table-basics">
-                        <tbody>
-                          <tr>
-                            <td>Table name: </td>
-                            <td>
-                              <input
-                                type="text"
-                                name="table_name"
-                                value={this.state.table_name}
-                                onChange={this.handleTableNameChange}
-                              />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Metamodel: </td>
-                            <td>
-                              <DropDown
-                                options={this.state.metamodels}
-                                handleSelection={this.selectMetamodel}
-                              />
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>Connection: </td>
-                            <td>
-                              <DropDown
-                                options={this.state.connections}
-                                handleSelection={this.renderColumnTree}
-                              />
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                    <td className="td2">
-                      <table>
-                        <tbody>
-                          <tr>
-                            <td className="table-type-td1">
-                              <div className="div-radio">
-                                <RadioSelect
-                                  handleRadioSelection={this.selectTableType}
-                                  options={this.tableOptions}
-                                />
-                                {this.state.table_type === "dim" ? (
-                                  <RadioSelect
-                                    handleRadioSelection={this.selectDimType}
-                                    options={this.dimOptions}
-                                  />
-                                ) : (
-                                  <div></div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="table-type-td1">
-                              {this.state.table_type === "dim" ? (
-                                <div>
-                                  Dimension key:
-                                  <br></br>
-                                  <input
-                                    className="dim-key-input"
-                                    type="text"
-                                    name="dimension_key"
-                                    value={this.state.dimension_key}
-                                    onChange={this.handleDimKeyChange}
-                                  />
-                                </div>
-                              ) : (
-                                <div></div>
-                              )}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                    <td className="td3">
-                      <table className="buttons-corner">
-                        <tbody>
-                          <tr>
-                            <td>
-                              {this.state.joinSetupRequired ? (
-                                <button
-                                  className="add-button"
-                                  onClick={this.toggleJoinsPopup}
-                                >
-                                  + Add joins
-                                </button>
-                              ) : (
-                                <div></div>
-                              )}
-                            </td>
-                            <td>
-                              <button
-                                className="add-button"
-                                onClick={this.addTable}
-                              >
-                                + Add table
-                              </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                  <tr className="tr2">
-                    <td className="tr2td">
-                      {this.state.showColumnTree && (
-                        <div className="column-tree">
-                          <ColumnTree data={this.state.tables} />
-                        </div>
+      <React.Fragment>
+        <DndProvider backend={HTML5Backend}>
+          <div className="container-fluid">
+            <div className="row align-items-center">
+              <div className="col p-0 m-0">
+                <Navigation active={this.state.active} />
+              </div>
+              <div className="row align-items-start">
+                <div className="col-3 p-2 m-4">
+                  <label htmlFor="table_name">Tábla neve: </label>
+                  <input
+                    id="table_name"
+                    className="p-0 m-2"
+                    type="text"
+                    name="table_name"
+                    value={this.state.table_name}
+                    onChange={this.handleTableNameChange}
+                  />
+                  <div className="row m-0 p-0">
+                    <div className="col m-0 p-0 d-flex justify-content-left">
+                      <DropDown
+                        options={this.state.metamodels}
+                        handleSelection={this.selectMetamodel}
+                        display={"Metamodell"}
+                        className="dropdown"
+                      />
+                      <DropDown
+                        options={this.state.connections}
+                        handleSelection={this.renderColumnTree}
+                        display={"Forrás"}
+                        className="dropdown"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="col-3 p-2 m-4">
+                  <button
+                    className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                    onClick={this.addTable}
+                  >
+                    + Tábla hozzáadása
+                  </button>
+                  {this.state.joinSetupRequired && (
+                    <button
+                      className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                      onClick={this.toggleJoinsPopup}
+                    >
+                      + Join hozzáadása
+                    </button>
+                  )}
+                </div>
+                <div className="col-4 p-2 m-4">
+                  <RadioSelect
+                    handleRadioSelection={this.selectTableType}
+                    options={this.tableOptions}
+                  />
+                  {this.state.table_type === "dim" && (
+                    <RadioSelect
+                      handleRadioSelection={this.selectDimType}
+                      options={this.dimOptions}
+                    />
+                  )}
+                  {this.state.table_type === "dim" && (
+                    <div className="col p-1 m-1">
+                      <label htmlFor="dimension_key">Dimenzió kulcs: </label>
+                      <input
+                        className="p-0 mx-2"
+                        type="text"
+                        name="dimension_key"
+                        value={this.state.dimension_key}
+                        onChange={this.handleDimKeyChange}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="row align-items-start">
+                <div className="col-2 p-2 m-2">
+                  {this.state.showColumnTree && (
+                    <ColumnTree data={this.state.tables} />
+                  )}
+                </div>
+                <div className="col-7 p-2 m-2">
+                  <Canvas addRemoveColumn={this.addRemoveColumn} />
+                </div>
+                <div className="col-2 p-0 m-0">
+                  {this.state.joinSetupRequired && (
+                    <div>
+                      {this.state.showjoinsPopup && (
+                        <JoinSetup
+                          columns={this.state.tables}
+                          tables={this.state.selected_tables}
+                          addJoin={this.addJoin}
+                          toggleJoinsPopup={this.toggleJoinsPopup}
+                        />
                       )}
-                    </td>
-                    <td className="tr2td">
-                      <Canvas addRemoveColumn={this.addRemoveColumn} />
-                    </td>
-                    <td className="tr2td">
-                      {this.state.joinSetupRequired && (
-                        <div>
-                          {this.state.showjoinsPopup && (
-                            <JoinSetup
-                              columns={this.state.tables}
-                              tables={this.state.selected_tables}
-                              addJoin={this.addJoin}
+                      {this.state.joinsRerender &&
+                        this.state.joins.map((join, index) => (
+                          <div className="join" key={index}>
+                            <Join
+                              condition={join.condition}
+                              index={index}
+                              removeJoin={this.removeJoin}
                             />
-                          )}
-                          {this.state.joinsRerender &&
-                            this.state.joins.map((join, index) => (
-                              <div className="join" key={index}>
-                                <Join
-                                  condition={join.condition}
-                                  index={index}
-                                  removeJoin={this.removeJoin}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </DndProvider>
-          </React.Fragment>
-        ) : (
-          <div>
-            <h1>Access Denied!</h1>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </DndProvider>
+      </React.Fragment>
     );
   }
 }

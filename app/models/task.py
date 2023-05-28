@@ -13,9 +13,9 @@ class Task(db.Model):
     load_type = db.Column(db.String(64))
     task_trigger = db.Column(db.String(64))
     task_schedule = db.Column(db.String(64))
-    start_date = db.Column(db.Date)
-    end_date = db.Column(db.Date)
-    last_run = db.Column(db.Date)
+    start_date = db.Column(db.DateTime)
+    end_date = db.Column(db.DateTime)
+    last_run = db.Column(db.DateTime)
     status = db.Column(db.String(64))
 
     def to_dict(self):

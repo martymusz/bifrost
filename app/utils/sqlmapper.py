@@ -30,11 +30,11 @@ def sqlmapper(source_table, columns, joins, filters):
     where_clause = ''
     for fltr in filters:
         if len(where_clause) == 0:
-            new_clause = 'WHERE ' + fltr["condition"]
+            new_clause = 'WHERE ' + fltr["condition"].replace('_', '.')
             where_clause = new_clause
 
         else:
-            new_clause = ' AND ' + fltr["condition"]
+            new_clause = ' AND ' + fltr["condition"].replace('_', '.')
             where_clause = where_clause + new_clause
 
     sql = f"{select_clause} {from_clause} {' '.join(join_clauses)} {where_clause}"

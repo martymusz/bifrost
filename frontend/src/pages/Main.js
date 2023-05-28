@@ -16,6 +16,7 @@ class Main extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.loginUser = this.loginUser.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
+    this.handleCloseAlert = this.handleCloseAlert.bind(this);
   }
 
   loginUser = async (event) => {

@@ -25,68 +25,47 @@ def get_all_tables():
 def add_table():
     data = request.json
     metamodel = Metamodel.get_by_id(metamodel_id=data['metamodel_id'])
-    columns = data['columns']
-    joins = data['joins']
-    filters = data['filters']
-    column_names = ''
-
     try:
-        new_table = Table.add_new_table(table_name=data['table_name'], table_type=data['table_type'],
-                                        dimension_type=data['dimension_type'], dimension_key=data['dimension_key'],
-                                        metamodel_id=metamodel.metamodel_id,
-                                        source_connection_id=data['source_connection_id'], columns='', sql='')
-
-        db.session.add(new_table)
-
-        for column in columns:
-            new_column = Column.add_new_column(column_name=column['column_name'], column_type=column['column_type'],
-                                               table_id=new_table.table_id)
-            db.session.add(new_column)
-            if len(column_names) == 0:
-                column_names = new_column.column_name
-            else:
-                column_names = column_names + new_column.name
-
-        new_table.columns = column_names
-        sql = sqlmapper(source_table=data['source_table'], columns=columns, joins=joins, filters=filters)
-        new_table.modify_sql(sql=sql)
-        metamodel.add_new_table(table_name=new_table.table_name)
-        db.session.commit()
-
-    except (sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable, sqlalchemy.exc.ProgrammingError) as e:
-        db.session.rollback()
-        current_app.logger.error(
-            'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
-        return jsonify({'message': 'Table creation failed because table already exists'}), 500
-
-    except ConnectionError as e:
-        db.session.rollback()
-        current_app.logger.error(
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table creation connection problem' + str(e))
-        return jsonify({'message': 'Table creation failed due to connection issues'}), 500
+        columns = data['columns']
+        filters = data['filters']
+        joins = data['joins']
+        column_names = ''
 
     except Exception as e:
-        db.session.rollback()
         current_app.logger.error(
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table creation failed' + str(e))
+                'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
         return jsonify({'message': 'Table creation failed due to server error'}), 500
 
     else:
-        try:
-            target_table = table_mapper(table_name=data['table_name'], source_columns=columns,
-                                        schema=metamodel.metamodel_schema, table_type=new_table.table_type)
 
-            target = Connection.get_by_id(connection_id=metamodel.target_connection_id)
-            target_engine = db.get_engine(bind_key=target.bind_key)
-            with target_engine.connect() as connection:
-                target_table.create(bind=target_engine)
-                connection.commit()
+        try:
+            new_table = Table.add_new_table(table_name=data['table_name'], table_type=data['table_type'],
+                                            dimension_type=data['dimension_type'], dimension_key=data['dimension_key'],
+                                            metamodel_id=metamodel.metamodel_id,
+                                            source_connection_id=data['source_connection_id'], columns='', sql='')
+
+            db.session.add(new_table)
+
+            for column in columns:
+                new_column = Column.add_new_column(column_name=column['column_name'], column_type=column['column_type'],
+                                                   table_id=new_table.table_id)
+                db.session.add(new_column)
+                if len(column_names) == 0:
+                    column_names = new_column.column_name
+                else:
+                    column_names = column_names + new_column.name
+
+            new_table.columns = column_names
+            sql = sqlmapper(source_table=data['source_table'], columns=columns, joins=joins, filters=filters)
+            new_table.modify_sql(sql=sql)
+            metamodel.add_new_table(table_name=new_table.table_name)
+            db.session.commit()
 
         except (sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable, sqlalchemy.exc.ProgrammingError) as e:
             db.session.rollback()
             current_app.logger.error(
                 'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
-            return jsonify({'message': 'Target table already exists in the database'}), 500
+            return jsonify({'message': 'Table creation failed because table already exists'}), 500
 
         except ConnectionError as e:
             db.session.rollback()
@@ -101,8 +80,37 @@ def add_table():
             return jsonify({'message': 'Table creation failed due to server error'}), 500
 
         else:
-            current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table created successfully')
-            return jsonify({'message': 'Table created successfully', 'Table': new_table.to_dict()}), 201
+            try:
+                target_table = table_mapper(table_name=data['table_name'], source_columns=columns,
+                                            schema=metamodel.metamodel_schema, table_type=new_table.table_type)
+
+                target = Connection.get_by_id(connection_id=metamodel.target_connection_id)
+                target_engine = db.get_engine(bind_key=target.bind_key)
+                with target_engine.connect() as connection:
+                    target_table.create(bind=target_engine)
+                    connection.commit()
+
+            except (sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable, sqlalchemy.exc.ProgrammingError) as e:
+                db.session.rollback()
+                current_app.logger.error(
+                    'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
+                return jsonify({'message': 'Target table already exists in the database'}), 500
+
+            except ConnectionError as e:
+                db.session.rollback()
+                current_app.logger.error(
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table creation connection problem' + str(e))
+                return jsonify({'message': 'Table creation failed due to connection issues'}), 500
+
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table creation failed' + str(e))
+                return jsonify({'message': 'Table creation failed due to server error'}), 500
+
+            else:
+                current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table created successfully')
+                return jsonify({'message': 'Table created successfully', 'data': new_table.to_dict()}), 201
 
 
 @api.route('/table/init/<int:table_id>', methods=['POST'])
@@ -173,7 +181,7 @@ def load_table(table_id):
         target_connection = Connection.get_by_id(connection_id=metamodel.target_connection_id)
         target_engine = db.get_engine(bind_key=target_connection.bind_key)
         full_table_name = metamodel.metamodel_schema + '.' + table.table_name
-        target_sql = sqlmapper(full_table_name)
+        target_sql = sqlmapper(full_table_name, columns=[], joins=[], filters=[])
 
     try:
         if table.table_type == 'dimension' and table.dimension_type == 'versioned':
@@ -211,10 +219,18 @@ def load_table(table_id):
 def remove_table(table_id):
     try:
         table = Table.get_by_id(table_id=table_id)
+        metamodel = Metamodel.get_by_id(table.metamodel_id)
+        metamodel.tables.replace(table.table_name, '')
+
+        target_connection = Connection.get_by_id(connection_id=metamodel.target_connection_id)
+        target_engine = db.get_engine(bind_key=target_connection.bind_key)
+        full_table_name = metamodel.metamodel_schema + '.' + table.table_name
+
         db.session.delete(table)
         db.session.commit()
 
     except IndexError:
+        db.session.rollback()
         current_app.logger.error(
             'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table not found')
         return jsonify({'error': 'Table not found'}), 404
@@ -226,9 +242,24 @@ def remove_table(table_id):
         return jsonify({'error': 'Error removing table'}), 500
 
     else:
-        current_app.logger.info(
-            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table removed successfully')
-        return jsonify({'message': 'Table removed successfully'}), 201
+
+        try:
+            truncate = text(f"DROP TABLE {full_table_name}")
+            with target_engine.connect() as connection:
+                connection.execute(truncate)
+                connection.commit()
+                connection.close()
+
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                                     'Error removing table' + ' ' + str(e))
+            return jsonify({'error': 'Error removing table, please drop it manually in the database.'}), 500
+
+        else:
+            current_app.logger.info(
+                'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table removed successfully')
+            return jsonify({'message': 'Table removed successfully'}), 201
 
 
 @api.route('/table/<int:table_id>/update', methods=['POST'])
