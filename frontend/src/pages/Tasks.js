@@ -25,9 +25,9 @@ class Tasks extends Component {
   }
 
   headers = [
-    "owner_id",
+    "owner_name",
     "task_id",
-    "table_id",
+    "table_name",
     "load_type",
     "status",
     "start_date",

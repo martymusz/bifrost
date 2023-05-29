@@ -9,20 +9,24 @@ class Task(db.Model):
 
     task_id = db.Column(db.Integer, sequence, primary_key=True, index=True)
     table_id = db.Column(db.Integer)
+    table_name = db.Column(db.String(50))
     owner_id = db.Column(db.Integer)
-    load_type = db.Column(db.String(64))
-    task_trigger = db.Column(db.String(64))
-    task_schedule = db.Column(db.String(64))
+    owner_name = db.Column(db.String(50))
+    load_type = db.Column(db.String(50))
+    task_trigger = db.Column(db.String(50))
+    task_schedule = db.Column(db.String(50))
     start_date = db.Column(db.DateTime)
     end_date = db.Column(db.DateTime)
     last_run = db.Column(db.DateTime)
-    status = db.Column(db.String(64))
+    status = db.Column(db.String(50))
 
     def to_dict(self):
         return {
             'task_id': self.task_id,
             'table_id': self.table_id,
+            'table_name': self.table_name,
             'owner_id': self.owner_id,
+            'owner_name': self.owner_name,
             "load_type": self.load_type,
             'task_trigger': self.task_trigger,
             'task_schedule': self.task_schedule,
@@ -33,9 +37,10 @@ class Task(db.Model):
         }
 
     @staticmethod
-    def add_new_task(table_id, owner_id, load_type, task_trigger, task_schedule, start_date, end_date):
-        new_task = Task(table_id=table_id, owner_id=owner_id, load_type=load_type, task_trigger=task_trigger,
-                        task_schedule=task_schedule, status='New', start_date=start_date, end_date=end_date)
+    def add_new_task(table_id, table_name, owner_id, owner_name, load_type, task_trigger, task_schedule, start_date, end_date):
+        new_task = Task(table_id=table_id, owner_name=owner_name, owner_id=owner_id, load_type=load_type,
+                        task_trigger=task_trigger, task_schedule=task_schedule, status='Új', table_name=table_name,
+                        start_date=start_date, end_date=end_date)
         return new_task
 
     @staticmethod

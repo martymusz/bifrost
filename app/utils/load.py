@@ -3,9 +3,9 @@ from flask import jsonify, current_app
 from flask_apscheduler import APScheduler
 from sqlalchemy import text
 from app.utils import sqlmapper
-from app.utils.init_load import init_load_view, init_load_dim, init_load_fact
+from app.utils.extract_data import init_load_view, init_load_dim, init_load_fact
 from app.models import Metamodel, Table, Connection, db, Task
-from app.utils.scd import load_scd
+from app.utils.transform_data import load_scd
 
 
 scheduler = APScheduler()
@@ -18,7 +18,7 @@ def create_task_executed(app):
             task = Task.get_by_id(task_id)
             last_run_time = event.scheduled_run_time
             task.modify_last_run(last_run_time)
-            task.modify_status("Successful")
+            task.modify_status("Sikeres futás")
             db.session.commit()
             current_app.logger.info(
                 'INFO ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Job ' + task_id
@@ -33,7 +33,7 @@ def create_task_failed(app):
             task = Task.get_by_id(task_id)
             last_run_time = event.scheduled_run_time
             task.modify_last_run(last_run_time)
-            task.modify_status("Failed")
+            task.modify_status("Hiba")
             db.session.commit()
             print(event.scheduled_run_time, last_run_time, event.exception, task.to_dict())
             current_app.logger.error(

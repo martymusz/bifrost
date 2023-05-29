@@ -10,33 +10,37 @@ class Table(db.Model):
 
     table_id = db.Column(db.Integer, sequence, primary_key=True, index=True)
     table_name = db.Column(db.String(50), nullable=False)
-    columns = db.Column(db.String(1000))
     table_type = db.Column(db.String(50), nullable=False)
     dimension_type = db.Column(db.String(50))
     dimension_key = db.Column(db.String(50))
     metamodel_id = db.Column(db.Integer, nullable=False)
+    metamodel_name = db.Column(db.String(50))
     source_connection_id = db.Column(db.Integer)
+    source_connection_name = db.Column(db.String(50))
     sql = db.Column(db.String(3000))
+    creation_timestamp = db.Column(db.DateTime)
 
     def to_dict(self):
         return {
             'table_id': self.table_id,
             'table_name': self.table_name,
-            'columns': self.columns,
             'table_type': self.table_type,
             'dimension_type': self.dimension_type,
             'dimension_key': self.dimension_key,
             'source_connection_id': self.source_connection_id,
+            'source_connection_name': self.source_connection_name,
             'metamodel_id': self.metamodel_id,
+            'metamodel_name': self.metamodel_name,
             'sql': self.sql
         }
 
     @staticmethod
-    def add_new_table(table_name, columns, table_type, dimension_type, dimension_key, source_connection_id,
-                      metamodel_id, sql):
-        new_table = Table(table_name=table_name, columns=columns, table_type=table_type, dimension_type=dimension_type,
+    def add_new_table(table_name, table_type, dimension_type, dimension_key, source_connection_id,
+                      source_connection_name, metamodel_id, metamodel_name, sql, creation_timestamp):
+        new_table = Table(table_name=table_name, table_type=table_type, dimension_type=dimension_type,
                           dimension_key=dimension_key, source_connection_id=source_connection_id,
-                          metamodel_id=metamodel_id, sql=sql)
+                          source_connection_name=source_connection_name, creation_timestamp=creation_timestamp,
+                          metamodel_id=metamodel_id, metamodel_name=metamodel_name, sql=sql)
         return new_table
 
     def add_new_column(self, column_name):

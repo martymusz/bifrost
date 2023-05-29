@@ -33,8 +33,8 @@ class PopupFormTable extends Component {
     return (
       <React.Fragment>
         <div className="modal-background">
-          <div className="modal-dialog-centered modal-dialog-scrollable">
-            <div className="form-group mx-0">
+          <div className="d-flex justify-content-center align-items-center">
+            <div className="popup-form-group mx-0">
               <form onSubmit={this.handleSubmit}>
                 <label htmlFor="sql">Lekérdezés: </label>
                 <input
@@ -48,18 +48,21 @@ class PopupFormTable extends Component {
                   required
                 />
                 <br></br>
-                <button
-                  type="submit"
-                  className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
-                >
-                  Módosít
-                </button>
-                <button
-                  onClick={this.props.closeEditModal}
-                  className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
-                >
-                  Mégse
-                </button>
+                <div className="container d-flex">
+                  <button
+                    type="submit"
+                    className="mb-3 mx-4 btn btn-primary d-none d-md-block coral"
+                  >
+                    Módosít
+                  </button>
+                  <button
+                    type="submit"
+                    className="mb-3 mx-4 btn btn-primary d-none d-md-block coral"
+                    onClick={this.props.closeEditModal}
+                  >
+                    Mégsem
+                  </button>
+                </div>
               </form>
             </div>
           </div>

@@ -12,14 +12,14 @@ def test_get_all_tables(client):
 
 def test_load_table(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/table/load/1', headers=headers, json={})
+    response = client.post('/api/table/load/43', headers=headers, json={})
     assert response.status_code == 201
     assert response.json['message'] == 'Load completed successfully'
 
 
 def test_init_table(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/table/init/1', headers=headers, json={})
+    response = client.post('/api/table/init/62', headers=headers, json={})
     assert response.status_code == 201
     assert response.json['message'] == 'Load completed successfully'
 
@@ -27,9 +27,9 @@ def test_init_table(client):
 def test_add_modify_remove_table(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
     response = client.post('/api/tables/add', headers=headers,
-                           json={'table_name': 'table_unit_test', 'table_type': 'view',
+                           json={'table_name': 'unit_unit_table', 'table_type': 'view',
                                  'dimension_type': '', 'dimension_key': '',
-                                 'metamodel_id': '1', 'filters': [],
+                                 'metamodel_id': '38', 'filters': [],
                                  'source_connection_id': '1', 'columns': [
                                    {'column_name': 'dkod', 'column_type': 'Integer', 'key': 'dolgozo_dkod',
                                     'table_name': 'dolgozo'}],

@@ -7,11 +7,12 @@ def table_mapper(table_name, source_columns, schema, table_type):
     for column in source_columns:
         column_name = column["column_name"]
         column_type = getattr(db, column["column_type"])
+        #nullable = column["nullable"]
         new_column = db.Column(column_name, column_type)
         columns.append(new_column)
 
     # Technikai mezők hozzáadása attól függően hogy dimenzió vagy ténytábla - ezeket nem kell felvezetni az adatmodellbe
-    if table_type == 'dim':
+    if table_type == 'dimension':
         start_date = db.Column(name='start_date', type_=db.DateTime)
         end_date = db.Column(name='end_date', type_=db.DateTime)
         current_flg = db.Column(name='current_flg', type_=db.String(5))

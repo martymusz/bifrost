@@ -9,6 +9,7 @@ class AddMetamodel extends Component {
       metamodel_name: "",
       metamodel_schema: "",
       target_connection_id: "0",
+      target_connection_name: "",
       showModal: false,
       message: "",
       messageVariant: "",
@@ -27,7 +28,13 @@ class AddMetamodel extends Component {
   };
 
   handleSelection = (selectedValue) => {
-    this.setState({ target_connection_id: selectedValue }, () => {});
+    const connection = this.props.connections.filter(
+      (conn) => conn.key === selectedValue
+    );
+    this.setState({
+      target_connection_id: selectedValue,
+      target_connection_name: connection[0].label,
+    });
   };
 
   handleSubmit = (event) => {
@@ -35,7 +42,8 @@ class AddMetamodel extends Component {
     this.props.addMetamodel(
       this.state.metamodel_name,
       this.state.metamodel_schema,
-      parseInt(this.state.target_connection_id)
+      parseInt(this.state.target_connection_id),
+      this.state.target_connection_name
     );
   };
 

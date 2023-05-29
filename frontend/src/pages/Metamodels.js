@@ -17,19 +17,16 @@ class Metamodels extends Component {
       connections: [],
       role: "",
       active: 3,
+      showAlert: false,
     };
-
-    this.fetchMetamodels = this.fetchMetamodels.bind(this);
-    this.fetchConnections = this.fetchConnections.bind(this);
-    this.toggleModal = this.toggleModal.bind(this);
   }
 
   headers = [
     "metamodel_id",
     "metamodel_name",
     "metamodel_schema",
+    "target_connection_name",
     "tables",
-    "target_connection_id",
   ];
 
   pretty_names = [
@@ -37,8 +34,8 @@ class Metamodels extends Component {
     "ID",
     "Metamodell név",
     "Séma",
-    "Táblák",
     "Kapcsolat",
+    "Táblák",
   ];
 
   componentDidMount() {
@@ -50,6 +47,10 @@ class Metamodels extends Component {
       this.fetchConnections();
     }
   }
+
+  handleCloseAlert = () => {
+    this.setState({ showAlert: false });
+  };
 
   toggleModal = () => {
     this.setState((prevState) => ({
@@ -111,7 +112,12 @@ class Metamodels extends Component {
       });
   };
 
-  addMetamodel = (metamodel_name, metamodel_schema, target_connection_id) => {
+  addMetamodel = (
+    metamodel_name,
+    metamodel_schema,
+    target_connection_id,
+    target_connection_name
+  ) => {
     const token = Cookies.get("authToken");
     fetch("/api/metamodels/add", {
       method: "POST",
@@ -123,6 +129,7 @@ class Metamodels extends Component {
         metamodel_name: metamodel_name,
         metamodel_schema: metamodel_schema,
         target_connection_id: target_connection_id,
+        target_connection_name: target_connection_name,
       }),
     })
       .then((response) => {
@@ -295,7 +302,7 @@ class Metamodels extends Component {
                   <CustomAlert
                     message={this.state.message}
                     variant={this.state.messageVariant}
-                    handleCloseModal={this.handleCloseAlert}
+                    handleCloseAlert={this.handleCloseAlert}
                   />
                 )}
               </div>

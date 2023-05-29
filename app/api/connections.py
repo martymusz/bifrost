@@ -11,6 +11,14 @@ from datetime import datetime
 @api.route('/connections', methods=['GET'])
 @login_required
 def get_all_connections():
+    """
+       Kapcsolatok lekérdezés
+       ---
+
+        responses:
+         200:
+           description: OK
+       """
     result = Connection.query.all()
     connections = sorted(result, key=lambda x: x.connection_id)
     return jsonify([connection.to_dict() for connection in connections]), 200
@@ -19,6 +27,20 @@ def get_all_connections():
 @api.route('/connections/add', methods=['POST'])
 @login_required
 def add_connection():
+    """
+       Kapcsolat hozzáadása.
+       ---
+       parameters:
+       - name: database_uri
+       - name: database_name
+       - name: bind_key
+       - name: default_schema
+       - name: driver_name
+
+       responses:
+         201:
+           description: OK
+       """
     data = request.json
     database_uri = data['database_uri'],
     database_name = data['database_name'],
@@ -55,6 +77,16 @@ def add_connection():
 @api.route('/connection/<int:connection_id>/remove', methods=['POST'])
 @login_required
 def remove_connection(connection_id):
+    """
+        Kapcsolat eltávolítása.
+        ---
+        parameters:
+        - name: connection_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         connection = Connection.get_by_id(connection_id=connection_id)
         db.session.delete(connection)
@@ -80,6 +112,21 @@ def remove_connection(connection_id):
 @api.route('/connection/<int:connection_id>/update', methods=['POST'])
 @login_required
 def update_connection(connection_id):
+    """
+        Kapcsolat módosítása.
+        ---
+        parameters:
+        - name: connection_id
+        - name: database_uri
+        - name: database_name
+        - name: bind_key
+        - name: default_schema
+        - name: driver_name
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         data = request.json
         connection = Connection.get_by_id(connection_id=connection_id)
@@ -114,6 +161,16 @@ def update_connection(connection_id):
 @api.route('/connection/<int:connection_id>/tables', methods=['POST'])
 @login_required
 def get_tables(connection_id):
+    """
+        Kapcsolathoz tartozó táblák lekérdezése.
+        ---
+        parameters:
+          - name: connection_id
+
+        responses:
+          200:
+            description: OK
+        """
     try:
         connection = Connection.get_by_id(connection_id)
 
@@ -129,11 +186,8 @@ def get_tables(connection_id):
             for column in columns:
                 tables.append({
                     'table_name': table_name,
-                    'column': column['name'],
-                    'nullable': column['nullable'],
-                    'datatype': str(column['type']),
+                    'column_name': column['name'],
                     'key': table_name + '_' + column['name'],
-                    'type': 'column'
                 })
         current_app.logger.info(
             'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table list retrieved')

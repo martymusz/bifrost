@@ -9,7 +9,7 @@ function Canvas(props) {
   const [{ isOver }, drop] = useDrop({
     accept: "column",
     drop: (item) => {
-      setDroppedItems((prevItems) => [...prevItems, item]);
+      setDroppedItems((prevItems) => [...prevItems, item.column]);
     },
     collect: (monitor) => ({
       isOver: !!monitor.isOver(),
@@ -17,7 +17,7 @@ function Canvas(props) {
   });
 
   const removeItem = (key) => {
-    const index = droppedItems.findIndex((item) => item.column.key === key);
+    const index = droppedItems.findIndex((column) => column.key === key);
     setDroppedItems((prevItems) => {
       const updatedItems = [...prevItems];
       updatedItems.splice(index, 1);
@@ -25,11 +25,11 @@ function Canvas(props) {
     });
   };
 
-  const updateItem = (key, item) => {
-    const index = droppedItems.findIndex((item) => item.column.key === key);
+  const updateItem = (key, column) => {
+    const index = droppedItems.findIndex((column) => column.key === key);
     setDroppedItems((prevItems) => {
       const updatedItems = [...prevItems];
-      updatedItems[index] = item;
+      updatedItems[index] = column;
       return updatedItems;
     });
   };
@@ -37,17 +37,7 @@ function Canvas(props) {
   const { addRemoveColumn } = props;
 
   useEffect(() => {
-    const columns = droppedItems.map((item) => {
-      return {
-        column_name: item.column.column,
-        column_type: item.column.datatype,
-        key: item.column.key,
-        nullable: item.column.nullable,
-        table_name: item.column.table_name,
-      };
-    });
-
-    addRemoveColumn(columns);
+    addRemoveColumn(droppedItems);
   }, [droppedItems, addRemoveColumn]);
 
   const canvas = {
@@ -57,13 +47,13 @@ function Canvas(props) {
 
   return (
     <div ref={drop} className="canvas" style={canvas}>
-      <Row className="m-0 p-0">
-        {droppedItems.map((item, index) => (
+      <Row className="m-0 p-2">
+        {droppedItems.map((column, index) => (
           <Col key={index} xs={14} sm={7} md={5} lg={2}>
             <Card
+              key={column.key}
               id={index}
-              index={index}
-              item={item}
+              column={column}
               removeCard={removeItem}
               updateCard={updateItem}
             />

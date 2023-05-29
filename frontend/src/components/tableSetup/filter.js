@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 
-class Join extends Component {
-  removeJoin = () => {
-    this.props.removeJoin(this.props.condition, this.props.index);
+class Filter extends Component {
+  removeFilter = () => {
+    this.props.removeFilter(this.props.condition, this.props.index);
   };
 
   render() {
@@ -13,7 +13,7 @@ class Join extends Component {
             <div className="col-1 p-0 m-0">
               <button
                 className="deact-button"
-                onClick={this.removeJoin}
+                onClick={this.removeFilter}
                 key={this.props.index}
               ></button>
             </div>
@@ -27,4 +27,4 @@ class Join extends Component {
   }
 }
 
-export default Join;
+export default Filter;

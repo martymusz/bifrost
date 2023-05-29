@@ -51,6 +51,11 @@ code {
   color: coral;
 }
 
+.coral:disabled {
+  background-color: darkgrey;
+  border-color: dimgray;
+}
+
 .cornflowerblue {
   background-color: cornflowerblue;
   border-color: cornflowerblue;
@@ -88,7 +93,7 @@ code {
 
 .dropdown {
   width: fit-content !important;
-  margin-right: 2%;
+  margin-right: 3%;
   margin-bottom: 1%;
 }
 
@@ -156,3 +161,6 @@ code {
   border-color: cornflowerblue;
 }
 
+.border-grey {
+  border: 1px solid darkgrey;
+}

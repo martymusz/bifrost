@@ -53,17 +53,21 @@ class Home extends Component {
     const email = Cookies.get("email");
     const userid = Cookies.get("userid");
     if (authToken) {
-      this.setState({
-        authenticated: true,
-        name: name,
-        role: role,
-        email: email,
-        userid: userid,
-      });
+      this.setState(
+        {
+          authenticated: true,
+          name: name,
+          role: role,
+          email: email,
+          userid: userid,
+        },
+        () => {
+          this.fetchTasks();
+        }
+      );
     } else {
       this.setState({ authenticated: false });
     }
-    this.fetchTasks();
   }
 
   openPswModal = () => {
@@ -89,7 +93,15 @@ class Home extends Component {
     })
       .then(async (response) => await response.json())
       .then((data) => {
-        this.setState({ tasks: data });
+        const tasksFiltered = data.filter(
+          (task) => task.owner_id.toString() === this.state.userid
+        );
+        const updatedTasks = tasksFiltered.map((task) => ({
+          ...task,
+          owner_id: this.state.name,
+        }));
+
+        this.setState({ tasks: updatedTasks });
       })
       .catch((error) => {
         console.error(error);

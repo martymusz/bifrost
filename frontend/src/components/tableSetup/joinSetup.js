@@ -37,12 +37,12 @@ class JoinSetup extends Component {
     const options = columnsFiltered.reduce((acc, item) => {
       const group = acc.find((group) => group.name === item.table_name);
       if (group) {
-        group.items.push({ value: item.key, label: item.column });
+        group.items.push({ value: item.key, label: item.column_name });
       } else {
         acc.push({
           type: "group",
           name: item.table_name,
-          items: [{ value: item.key, label: item.column }],
+          items: [{ value: item.key, label: item.column_name }],
         });
       }
       return acc;

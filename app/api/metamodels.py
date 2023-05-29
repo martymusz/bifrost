@@ -1,5 +1,5 @@
 from flask import jsonify, request, current_app
-from sqlalchemy import DDL
+from sqlalchemy import DDL, join
 from app.api import api
 from app.models import db, Table
 from app.middleware import login_required
@@ -11,6 +11,14 @@ from datetime import datetime
 @api.route('/metamodels', methods=['GET'])
 @login_required
 def get_all_metamodels():
+    """
+       Metamodellek lekérdezése.
+       ---
+
+        responses:
+         200:
+           description: OK
+       """
     result = Metamodel.query.all()
     metamodels = sorted(result, key=lambda x: x.metamodel_id)
     return jsonify([metamodel.to_dict() for metamodel in metamodels]), 200
@@ -19,12 +27,33 @@ def get_all_metamodels():
 @api.route('/metamodels/add', methods=['POST'])
 @login_required
 def add_metamodel():
+    """
+        Metamodell létrehozása.
+        ---
+        parameters:
+        - name: metamodel_name
+        - name: metamodel_schema
+        - name: target_connection_id
+        - name: target_connection_name
+
+        responses:
+          201:
+            description: OK
+        """
     data = request.json
+    metamodel_name = data['metamodel_name']
+    metamodel_schema = data['metamodel_schema']
+    target_connection_id = data['target_connection_id']
+    target_connection = Connection.get_by_id(target_connection_id)
+    target_connection_name = target_connection.bind_key
+    creation_timestamp = datetime.now()
 
     try:
-        new_metamodel = Metamodel.add_new_metamodel(metamodel_name=data['metamodel_name'],
-                                                    metamodel_schema=data['metamodel_schema'],
-                                                    target_connection_id=data['target_connection_id'])
+        new_metamodel = Metamodel.add_new_metamodel(metamodel_name=metamodel_name,
+                                                    metamodel_schema=metamodel_schema,
+                                                    target_connection_id=target_connection_id,
+                                                    target_connection_name=target_connection_name,
+                                                    creation_timestamp=creation_timestamp)
         db.session.add(new_metamodel)
         db.session.commit()
         target = Connection.get_by_id(data['target_connection_id'])
@@ -59,10 +88,27 @@ def add_metamodel():
 @api.route('/metamodel/<int:metamodel_id>/remove', methods=['POST'])
 @login_required
 def remove_metamodel(metamodel_id):
+    """
+        Metamodell eltávolítása.
+        ---
+        parameters:
+        - name: metamodel_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         metamodel = Metamodel.get_by_id(metamodel_id=metamodel_id)
-        db.session.delete(metamodel)
-        db.session.commit()
+        tables = Table.query.all()
+        for table in tables:
+            if table.metamodel_id == metamodel.metamodel_id:
+                current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                                         'Error removing metamodel because of dependency' + ' ')
+                return jsonify({'error': 'Cannot remove metamodel because there are tables referring'}), 500
+        else:
+            db.session.delete(metamodel)
+            db.session.commit()
 
     except IndexError:
         current_app.logger.error(
@@ -84,6 +130,17 @@ def remove_metamodel(metamodel_id):
 @api.route('/metamodel/<int:metamodel_id>/update', methods=['POST'])
 @login_required
 def update_metamodel(metamodel_id):
+    """
+        Metamodell módosítása.
+        ---
+        parameters:
+        - name: metamodel_id
+        - name: metamodel_name
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         data = request.json
         metamodel_name = data['metamodel_name'],

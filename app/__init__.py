@@ -5,6 +5,8 @@ import logging
 from app.api import api
 from app.models import db
 from app.utils import create_task_executed, create_task_failed, restore_tasks, scheduler
+from flask import Flask
+from flasgger import Swagger
 
 
 def create_app():
@@ -16,8 +18,6 @@ def create_app():
     logger.addHandler(file_handler)
 
     app.config.from_pyfile('config.py')
-
-
 
     db.init_app(app)
     scheduler.init_app(app)
@@ -31,7 +31,9 @@ def create_app():
         scheduler.add_listener(task_failed, EVENT_JOB_ERROR)
         restore_tasks(app)
 
+    swagger = Swagger(app)
     CORS(app, resources={r'/api/*': {'origins': ['http://localhost:3000']}})
+
     app.register_blueprint(api)
 
     return app

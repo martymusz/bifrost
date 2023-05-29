@@ -15,11 +15,6 @@ test("Check page with proper login", () => {
     </MemoryRouter>
   );
 
-  const add = screen.getByRole("button", {
-    name: "+ Új kapcsolat",
-  });
-  expect(add).toBeInTheDocument();
-
   const tables = screen.getAllByRole("table", {
     class: "table table-striped table-bordered table-hover",
   });

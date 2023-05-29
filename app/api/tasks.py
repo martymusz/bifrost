@@ -1,11 +1,11 @@
 from datetime import datetime
 from flask import request, jsonify, current_app
-from app.models import db
+from app.models import db, User
 from app.middleware import login_required
 from app.models.task import Task
 from app.api import api
 from app.models import Table
-from app.utils.schedule import add_new_task, remove_task, scheduler, scheduled_init_job, scheduled_load_job
+from app.utils.load import add_new_task, remove_task, scheduler, scheduled_init_job, scheduled_load_job
 
 
 @api.route('/tasks', methods=['GET'])
@@ -18,6 +18,22 @@ def get_all_tasks():
 @api.route('/tasks/add', methods=['POST'])
 @login_required
 def create_task():
+    """
+        Töltő létrehozása.
+        ---
+        parameters:
+        - name: table_id
+        - name: owner_id
+        - name: load_type
+        - name: task_trigger
+        - name: start_date
+        - name: end_date
+        - name: task_schedule
+
+        responses:
+          201:
+            description: OK
+        """
     data = request.get_json()
     table_id = data['table_id']
     owner_id = data['owner_id']
@@ -32,7 +48,7 @@ def create_task():
         task_schedule = 0
 
     try:
-
+        owner = User.get_by_userid(owner_id)
         table = Table.get_by_id(table_id=table_id)
 
     except IndexError:
@@ -44,8 +60,9 @@ def create_task():
 
         try:
 
-            task = Task.add_new_task(table_id=table_id, owner_id=owner_id, load_type=load_type, task_trigger=task_trigger,
-                                     task_schedule=task_schedule, start_date=start_date, end_date=end_date)
+            task = Task.add_new_task(table_id=table_id, owner_id=owner_id, owner_name=owner.name,
+                                     load_type=load_type, task_trigger=task_trigger, task_schedule=task_schedule,
+                                     start_date=start_date, end_date=end_date, table_name=table.table_name)
             db.session.add(task)
             db.session.commit()
 
@@ -87,6 +104,16 @@ def create_task():
 @api.route('/task/<int:task_id>/remove', methods=['POST'])
 @login_required
 def remove_scheduled_task(task_id):
+    """
+        Töltő törlése.
+        ---
+        parameters:
+        - name: task_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         task = Task.get_by_id(task_id)
         db.session.delete(task)

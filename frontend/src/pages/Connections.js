@@ -19,11 +19,6 @@ class Connections extends Component {
       showEditModal: false,
       rowForEdit: "",
     };
-
-    this.fetchConnections = this.fetchConnections.bind(this);
-    this.modifyConnection = this.modifyConnection.bind(this);
-    this.deleteConnection = this.deleteConnection.bind(this);
-    this.toggleModal = this.toggleModal.bind(this);
   }
 
   headers = [
@@ -140,7 +135,8 @@ class Connections extends Component {
                   driver_name: "",
                 },
                 () => {
-                  this.props.fetchConnections();
+                  this.fetchConnections();
+                  this.toggleModal();
                 }
               );
             }
@@ -153,7 +149,8 @@ class Connections extends Component {
               showModal: true,
             },
             () => {
-              this.props.fetchConnections();
+              this.fetchConnections();
+              this.toggleModal();
             }
           );
         }
@@ -275,7 +272,7 @@ class Connections extends Component {
             </div>
             <div className="row align-items-center">
               <div className="col p-2">
-                {this.state.role !== "3" && (
+                {this.state.role === "1" && (
                   <button
                     className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
                     onClick={this.toggleModal}

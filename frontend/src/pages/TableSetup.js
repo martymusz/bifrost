@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -9,6 +10,10 @@ import Canvas from "../components/tableSetup/canvas";
 import RadioSelect from "../components/common/radioSelect";
 import JoinSetup from "../components/tableSetup/joinSetup";
 import Join from "../components/tableSetup/join";
+import FilterSetup from "../components/tableSetup/filterSetup";
+import Filter from "../components/tableSetup/filter";
+import CustomAlert from "../components/common/alert";
+import Checklist from "../components/tableSetup/checklist";
 
 class TableSetup extends Component {
   constructor(props) {
@@ -22,6 +27,7 @@ class TableSetup extends Component {
       table_name: "",
       tables: [],
       showColumnTree: false,
+      showAlert: false,
 
       table_type: "",
       dimension_type: "",
@@ -32,34 +38,32 @@ class TableSetup extends Component {
       source_table: "",
 
       joins: [],
-      joinsRerender: true,
       showjoinsPopup: false,
       joinSetupRequired: false,
-    };
 
-    this.renderColumnTree = this.renderColumnTree.bind(this);
-    this.fetchConnections = this.fetchConnections.bind(this);
-    this.fetchTables = this.fetchTables.bind(this);
-    this.selectTableType = this.selectTableType.bind(this);
-    this.selectDimType = this.selectDimType.bind(this);
-    this.handleDimKeyChange = this.handleDimKeyChange.bind(this);
-    this.handleTableNameChange = this.handleTableNameChange.bind(this);
-    this.renderColumnTree = this.renderColumnTree.bind(this);
-    this.toggleJoinsPopup = this.toggleJoinsPopup.bind(this);
-    this.addRemoveColumn = this.addRemoveColumn.bind(this);
-    this.addJoin = this.addJoin.bind(this);
-    this.removeJoin = this.removeJoin.bind(this);
+      filters: [],
+      showFiltersPopup: false,
+
+      setupComplete: false,
+      check_joins: false,
+      check_name: false,
+      check_metamodel: false,
+      check_columns: false,
+      check_tables: false,
+      check_table_type: false,
+      check_dim_key: false,
+    };
   }
 
   tableOptions = [
-    { name: "tabletype", value: "fact", label: "Fact", key: 0 },
-    { name: "tabletype", value: "dim", label: "Dimension", key: 1 },
-    { name: "tabletype", value: "view", label: "View", key: 2 },
+    { name: "tabletype", value: "fact", label: "Tény", key: 0 },
+    { name: "tabletype", value: "dimension", label: "Dimenzió", key: 1 },
+    { name: "tabletype", value: "view", label: "Nézet", key: 2 },
   ];
 
   dimOptions = [
-    { name: "dimtype", value: "noversion", label: "No History", key: 3 },
-    { name: "dimtype", value: "versioned", label: "Historization", key: 4 },
+    { name: "dimtype", value: "noversion", label: "Nem historizált", key: 3 },
+    { name: "dimtype", value: "versioned", label: "Historizált", key: 4 },
   ];
 
   componentDidMount() {
@@ -68,8 +72,51 @@ class TableSetup extends Component {
       this.setState({ authenticated: true });
       this.fetchMetaModels();
       this.fetchConnections();
+      this.checkSetupComplete();
     }
   }
+
+  navigateToTablePage = (event) => {
+    const navigate = this.props.navigate;
+    navigate("/tables");
+  };
+
+  checkSetupComplete = () => {
+    const check_joins =
+      (!this.state.joinSetupRequired && this.state.joins.length === 0) ||
+      (this.state.joinSetupRequired && this.state.joins.length !== 0);
+    const check_name = this.state.table_name !== "";
+    const check_metamodel = this.state.metamodel_id !== "";
+    const check_columns = this.state.selected_columns.length !== 0;
+    const check_tables = this.state.selected_tables.length !== 0;
+    const check_table_type = this.state.table_type !== "";
+    const check_dim_key =
+      this.state.table_type !== "dimension" ||
+      (this.state.table_type === "dimension" &&
+        this.state.dimension_key !== "");
+
+    this.setState({
+      setupComplete:
+        check_joins &&
+        check_name &&
+        check_metamodel &&
+        check_columns &&
+        check_tables &&
+        check_table_type &&
+        check_dim_key,
+      check_joins: check_joins,
+      check_name: check_name,
+      check_metamodel: check_metamodel,
+      check_columns: check_columns,
+      check_tables: check_tables,
+      check_table_type: check_table_type,
+      check_dim_key: check_dim_key,
+    });
+  };
+
+  handleCloseAlert = () => {
+    this.setState({ showAlert: false });
+  };
 
   fetchMetaModels = async () => {
     const token = Cookies.get("authToken");
@@ -141,28 +188,37 @@ class TableSetup extends Component {
   };
 
   selectTableType = (selectedValue) => {
-    this.setState({ table_type: selectedValue });
+    this.setState({ table_type: selectedValue }, () => {
+      this.checkSetupComplete();
+    });
   };
 
   selectDimType = (selectedValue) => {
     if (selectedValue) {
-      this.setState({ dimension_type: selectedValue });
+      this.setState({ dimension_type: selectedValue }, () => {
+        this.checkSetupComplete();
+      });
     }
   };
 
   handleDimKeyChange = (event) => {
     const dimension_key = event.target.value;
-    this.setState({ dimension_key: dimension_key });
+    this.setState({ dimension_key: dimension_key }, () => {
+      this.checkSetupComplete();
+    });
   };
 
   selectMetamodel = (selectedValue) => {
-    console.log(selectedValue);
-    this.setState({ metamodel_id: selectedValue });
+    this.setState({ metamodel_id: selectedValue }, () => {
+      this.checkSetupComplete();
+    });
   };
 
   handleTableNameChange = (event) => {
     const name = event.target.value;
-    this.setState({ table_name: name });
+    this.setState({ table_name: name }, () => {
+      this.checkSetupComplete();
+    });
   };
 
   renderColumnTree = async (selectedValue) => {
@@ -171,15 +227,6 @@ class TableSetup extends Component {
       source_connection_id: selectedValue,
     });
     this.fetchTables(selectedValue);
-    this.setState({
-      tableType: "",
-      historization: false,
-
-      selected_tables: [],
-      selected_columns: [],
-      joins: [],
-      joinSetupRequired: false,
-    });
   };
 
   addRemoveColumn = (columns) => {
@@ -198,6 +245,7 @@ class TableSetup extends Component {
         });
       }
     }
+    this.checkSetupComplete();
   };
 
   toggleJoinsPopup = () => {
@@ -212,6 +260,7 @@ class TableSetup extends Component {
       (prevState) => ({ joins: [...prevState.joins, join] }),
       () => {
         console.log("Added join: ", this.state.joins);
+        this.checkSetupComplete();
       }
     );
   };
@@ -221,7 +270,32 @@ class TableSetup extends Component {
       (join) => join.condition !== condition
     );
     this.setState({ joins: removedJoin }, () => {
-      console.log(this.state.joins);
+      this.checkSetupComplete();
+    });
+  };
+
+  toggleFiltersPopup = () => {
+    this.setState((prevState) => ({
+      showFiltersPopup: !prevState.showFiltersPopup,
+    }));
+  };
+
+  addFilter = (filter) => {
+    this.toggleFiltersPopup();
+    this.setState(
+      (prevState) => ({ filters: [...prevState.filters, filter] }),
+      () => {
+        this.checkSetupComplete();
+      }
+    );
+  };
+
+  removeFilter = (condition) => {
+    const removedFilter = this.state.filters.filter(
+      (filter) => filter.condition !== condition
+    );
+    this.setState({ filters: removedFilter }, () => {
+      this.checkSetupComplete();
     });
   };
 
@@ -229,120 +303,123 @@ class TableSetup extends Component {
     const joins_processed = [];
     const array = this.state.joins;
 
-    array.sort((a, b) => {
-      const compare = a.table_name.localeCompare(b.table_name);
-      if (a.table_name !== b.table_name) {
-        return compare;
-      } else {
-        return a.joined_table.localeCompare(b.joined_table);
-      }
-    });
+    if (array.length !== 0) {
+      array.sort((a, b) => {
+        const compare = a.table_name.localeCompare(b.table_name);
+        if (a.table_name !== b.table_name) {
+          return compare;
+        } else {
+          return a.joined_table.localeCompare(b.joined_table);
+        }
+      });
 
-    const filteredjoins = array.filter(
-      (item) => item.joined_table !== item.table_name
-    );
-
-    joins_processed.push({
-      table_name: filteredjoins[0].joined_table,
-      join_type: parseInt(filteredjoins[0].join_type),
-      join_condition: filteredjoins[0].condition,
-    });
-
-    const source_table = filteredjoins[0].table_name;
-
-    filteredjoins.forEach((join, index) => {
-      const joined_table_found = joins_processed.some(
-        (obj) => obj["table_name"] === join.joined_table
-      );
-      const table_found = joins_processed.some(
-        (obj) => obj["table_name"] === join.table_name
+      const filteredjoins = array.filter(
+        (item) => item.joined_table !== item.table_name
       );
 
-      if (index > 0 && source_table === join.table_name && joined_table_found) {
-        const i = joins_processed.findIndex(
+      joins_processed.push({
+        table_name: filteredjoins[0].joined_table,
+        join_type: parseInt(filteredjoins[0].join_type),
+        join_condition: filteredjoins[0].condition,
+      });
+
+      const source_table = filteredjoins[0].table_name;
+
+      filteredjoins.forEach((join, index) => {
+        const joined_table_found = joins_processed.some(
           (obj) => obj["table_name"] === join.joined_table
         );
-        joins_processed[i].join_condition += " AND " + join.condition;
-      } else if (
-        index > 0 &&
-        source_table === join.joined_table &&
-        table_found
-      ) {
-        const i = joins_processed.findIndex(
+        const table_found = joins_processed.some(
           (obj) => obj["table_name"] === join.table_name
         );
-        joins_processed[i].join_condition += " AND " + join.condition;
-      } else if (
-        index > 0 &&
-        source_table !== join.table_name &&
-        joined_table_found &&
-        table_found
-      ) {
-        const i = joins_processed.findIndex(
-          (obj) => obj["table_name"] === join.joined_table
-        );
-        joins_processed[i].join_condition += " AND " + join.condition;
-      } else if (
-        index > 0 &&
-        source_table !== join.joined_table &&
-        source_table !== join.table_name &&
-        !table_found & joined_table_found
-      ) {
-        joins_processed.push({
-          table_name: join.table_name,
-          join_type: parseInt(join.join_type),
-          join_condition: join.condition,
-        });
-      } else if (
-        index > 0 &&
-        source_table !== join.joined_table &&
-        source_table !== join.table_name &&
-        !joined_table_found &&
-        table_found
-      ) {
-        joins_processed.push({
-          table_name: join.joined_table,
-          join_type: parseInt(join.join_type),
-          join_condition: join.condition,
-        });
-      } else if (
-        index > 0 &&
-        source_table === join.table_name &&
-        !joined_table_found &&
-        table_found
-      ) {
-        joins_processed.push({
-          table_name: join.joined_table,
-          join_type: parseInt(join.join_type),
-          join_condition: join.condition,
-        });
-      } else if (
-        index > 0 &&
-        source_table === join.table_name &&
-        !table_found &&
-        joined_table_found
-      ) {
-        joins_processed.push({
-          table_name: join.table_name,
-          join_type: parseInt(join.join_type),
-          join_condition: join.condition,
-        });
-      }
-    });
 
-    console.log(joins_processed);
+        if (
+          index > 0 &&
+          source_table === join.table_name &&
+          joined_table_found
+        ) {
+          const i = joins_processed.findIndex(
+            (obj) => obj["table_name"] === join.joined_table
+          );
+          joins_processed[i].join_condition += " AND " + join.condition;
+        } else if (
+          index > 0 &&
+          source_table === join.joined_table &&
+          table_found
+        ) {
+          const i = joins_processed.findIndex(
+            (obj) => obj["table_name"] === join.table_name
+          );
+          joins_processed[i].join_condition += " AND " + join.condition;
+        } else if (
+          index > 0 &&
+          source_table !== join.table_name &&
+          joined_table_found &&
+          table_found
+        ) {
+          const i = joins_processed.findIndex(
+            (obj) => obj["table_name"] === join.joined_table
+          );
+          joins_processed[i].join_condition += " AND " + join.condition;
+        } else if (
+          index > 0 &&
+          source_table !== join.joined_table &&
+          source_table !== join.table_name &&
+          !table_found & joined_table_found
+        ) {
+          joins_processed.push({
+            table_name: join.table_name,
+            join_type: parseInt(join.join_type),
+            join_condition: join.condition,
+          });
+        } else if (
+          index > 0 &&
+          source_table !== join.joined_table &&
+          source_table !== join.table_name &&
+          !joined_table_found &&
+          table_found
+        ) {
+          joins_processed.push({
+            table_name: join.joined_table,
+            join_type: parseInt(join.join_type),
+            join_condition: join.condition,
+          });
+        } else if (
+          index > 0 &&
+          source_table === join.table_name &&
+          !joined_table_found &&
+          table_found
+        ) {
+          joins_processed.push({
+            table_name: join.joined_table,
+            join_type: parseInt(join.join_type),
+            join_condition: join.condition,
+          });
+        } else if (
+          index > 0 &&
+          source_table === join.table_name &&
+          !table_found &&
+          joined_table_found
+        ) {
+          joins_processed.push({
+            table_name: join.table_name,
+            join_type: parseInt(join.join_type),
+            join_condition: join.condition,
+          });
+        }
+      });
 
-    this.setState(
-      {
-        source_table: source_table,
-        joins_processed: joins_processed,
-      },
-      () => console.log(this.state)
-    );
+      this.setState(
+        {
+          source_table: source_table,
+          joins_processed: joins_processed,
+        },
+        () => console.log(this.state)
+      );
+    }
 
-    /*
     const token = Cookies.get("authToken");
-    fetch("http://127.0.0.1:5000/api/tables/add", {
+    fetch("/api/tables/add", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -358,15 +435,28 @@ class TableSetup extends Component {
         columns: this.state.selected_columns,
         source_table: this.state.source_table,
         joins: this.state.joins,
+        filters: this.state.filters,
       }),
     })
-      .catch((error) => {
-        console.error(error);
+      .then((response) => {
+        if (response.ok) {
+          this.setState({
+            message: "Adattábla létrehozása sikeres!",
+            messageVariant: "success",
+            showAlert: true,
+          });
+          this.navigateToTablePage();
+        } else {
+          this.setState({
+            message: "Hiba! Az adattábla létrehozása nem sikerült!",
+            messageVariant: "danger",
+            showAlert: true,
+          });
+        }
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Request failed:", error);
       });
-  */
   };
 
   render() {
@@ -374,112 +464,155 @@ class TableSetup extends Component {
       <React.Fragment>
         <DndProvider backend={HTML5Backend}>
           <div className="container-fluid">
-            <div className="row align-items-center">
+            <div className="row">
               <div className="col p-0 m-0">
                 <Navigation active={this.state.active} />
               </div>
-              <div className="row align-items-start">
-                <div className="col-3 p-2 m-4">
-                  <label htmlFor="table_name">Tábla neve: </label>
-                  <input
-                    id="table_name"
-                    className="p-0 m-2"
-                    type="text"
-                    name="table_name"
-                    value={this.state.table_name}
-                    onChange={this.handleTableNameChange}
+            </div>
+            <div className="row align-items-left">
+              <div className="col">
+                {this.state.showAlert && (
+                  <CustomAlert
+                    message={this.state.message}
+                    variant={this.state.messageVariant}
+                    handleCloseModal={this.handleCloseAlert}
                   />
-                  <div className="row m-0 p-0">
-                    <div className="col m-0 p-0 d-flex justify-content-left">
-                      <DropDown
-                        options={this.state.metamodels}
-                        handleSelection={this.selectMetamodel}
-                        display={"Metamodell"}
-                        className="dropdown"
-                      />
-                      <DropDown
-                        options={this.state.connections}
-                        handleSelection={this.renderColumnTree}
-                        display={"Forrás"}
-                        className="dropdown"
-                      />
-                    </div>
+                )}
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-2 p-2 my-4 mx-1 border-grey">
+                <div className="row m-0 p-0">
+                  <div className="col m-0 p-0 d-flex justify-content-left">
+                    <DropDown
+                      options={this.state.metamodels}
+                      handleSelection={this.selectMetamodel}
+                      display={"Metamodell"}
+                      className="dropdown"
+                    />
+                    <DropDown
+                      options={this.state.connections}
+                      handleSelection={this.renderColumnTree}
+                      display={"Forrás"}
+                      className="dropdown"
+                    />
                   </div>
                 </div>
-                <div className="col-3 p-2 m-4">
-                  <button
-                    className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
-                    onClick={this.addTable}
-                  >
-                    + Tábla hozzáadása
-                  </button>
-                  {this.state.joinSetupRequired && (
-                    <button
-                      className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
-                      onClick={this.toggleJoinsPopup}
-                    >
-                      + Join hozzáadása
-                    </button>
-                  )}
-                </div>
-                <div className="col-4 p-2 m-4">
-                  <RadioSelect
-                    handleRadioSelection={this.selectTableType}
-                    options={this.tableOptions}
-                  />
-                  {this.state.table_type === "dim" && (
-                    <RadioSelect
-                      handleRadioSelection={this.selectDimType}
-                      options={this.dimOptions}
-                    />
-                  )}
-                  {this.state.table_type === "dim" && (
-                    <div className="col p-1 m-1">
-                      <label htmlFor="dimension_key">Dimenzió kulcs: </label>
-                      <input
-                        className="p-0 mx-2"
-                        type="text"
-                        name="dimension_key"
-                        value={this.state.dimension_key}
-                        onChange={this.handleDimKeyChange}
-                      />
-                    </div>
-                  )}
-                </div>
+                <label htmlFor="table_name">Tábla neve: </label>
+                <input
+                  id="table_name"
+                  className="p-0 m-2"
+                  type="text"
+                  name="table_name"
+                  value={this.state.table_name}
+                  onChange={this.handleTableNameChange}
+                />
+                <button
+                  className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                  onClick={this.addTable}
+                  disabled={!this.state.setupComplete}
+                >
+                  + Tábla mentése
+                </button>
               </div>
-              <div className="row align-items-start">
-                <div className="col-2 p-2 m-2">
-                  {this.state.showColumnTree && (
-                    <ColumnTree data={this.state.tables} />
-                  )}
-                </div>
-                <div className="col-7 p-2 m-2">
-                  <Canvas addRemoveColumn={this.addRemoveColumn} />
-                </div>
-                <div className="col-2 p-0 m-0">
-                  {this.state.joinSetupRequired && (
-                    <div>
-                      {this.state.showjoinsPopup && (
-                        <JoinSetup
-                          columns={this.state.tables}
-                          tables={this.state.selected_tables}
-                          addJoin={this.addJoin}
-                          toggleJoinsPopup={this.toggleJoinsPopup}
-                        />
-                      )}
-                      {this.state.joinsRerender &&
-                        this.state.joins.map((join, index) => (
-                          <div className="join" key={index}>
-                            <Join
-                              condition={join.condition}
-                              index={index}
-                              removeJoin={this.removeJoin}
-                            />
-                          </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
+              <div className="col-3 p-2 my-4 mx-2 border-grey">
+                <button
+                  className="mb-3 mx- btn btn-primary d-none d-md-block coral"
+                  onClick={this.toggleJoinsPopup}
+                  disabled={!this.state.joinSetupRequired}
+                >
+                  + Join hozzáadása
+                </button>
+                {this.state.showjoinsPopup && (
+                  <JoinSetup
+                    columns={this.state.tables}
+                    tables={this.state.selected_tables}
+                    addJoin={this.addJoin}
+                    toggleJoinsPopup={this.toggleJoinsPopup}
+                  />
+                )}
+                {this.state.joins.map((join, index) => (
+                  <div className="join" key={index}>
+                    <Join
+                      condition={join.condition}
+                      index={index}
+                      removeJoin={this.removeJoin}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="col-3 p-2 my-4 mx-1 border-grey">
+                <button
+                  className="mb-3 mx-2 btn btn-primary d-none d-md-block coral"
+                  onClick={this.toggleFiltersPopup}
+                  disabled={this.state.selected_tables.length === 0}
+                >
+                  + Filter hozzáadása
+                </button>
+                {this.state.showFiltersPopup && (
+                  <FilterSetup
+                    columns={this.state.tables}
+                    tables={this.state.selected_tables}
+                    addFilter={this.addFilter}
+                    toggleFiltersPopup={this.toggleFiltersPopup}
+                  />
+                )}
+                {this.state.filters.map((filter, index) => (
+                  <div className="join" key={index}>
+                    <Filter
+                      condition={filter.condition}
+                      index={index}
+                      removeFilter={this.removeFilter}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="col-3 p-2 m-4 border-grey">
+                <RadioSelect
+                  handleRadioSelection={this.selectTableType}
+                  options={this.tableOptions}
+                />
+                <br></br>
+                {this.state.table_type === "dimension" && (
+                  <RadioSelect
+                    handleRadioSelection={this.selectDimType}
+                    options={this.dimOptions}
+                  />
+                )}
+                {this.state.table_type === "dimension" && (
+                  <div className="col p-1 m-1">
+                    <label htmlFor="dimension_key">Dimenzió kulcs: </label>
+                    <input
+                      className="p-0 mx-2"
+                      type="text"
+                      name="dimension_key"
+                      value={this.state.dimension_key}
+                      onChange={this.handleDimKeyChange}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-2 p-2 m-2 border-grey">
+                {this.state.showColumnTree && (
+                  <ColumnTree data={this.state.tables} />
+                )}
+              </div>
+              <div className="col-6 p-2 m-2 border-grey">
+                <Canvas addRemoveColumn={this.addRemoveColumn} />
+              </div>
+              <div className="col-3 p-2 my-2 mx-3 border-grey">
+                <Checklist
+                  key={this.state.refreshKey}
+                  check_joins={this.state.check_joins}
+                  check_name={this.state.check_name}
+                  check_metamodel={this.state.check_metamodel}
+                  check_columns={this.state.check_columns}
+                  check_tables={this.state.check_tables}
+                  check_table_type={this.state.check_table_type}
+                  check_dim_key={this.state.check_dim_key}
+                />
               </div>
             </div>
           </div>
@@ -489,4 +622,7 @@ class TableSetup extends Component {
   }
 }
 
-export default TableSetup;
+export default function TableWrapper() {
+  const navigate = useNavigate();
+  return <TableSetup navigate={navigate} />;
+}

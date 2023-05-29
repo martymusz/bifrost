@@ -9,13 +9,22 @@ from app.models.metamodel import Metamodel
 from app.models.table import Table
 from app.models.column import Column
 from app.middleware import login_required
-from app.utils import table_mapper, sqlmapper, load_scd, init_load_dim, init_load_view, init_load_fact
+from app.utils import table_mapper, sqlmapper, load_scd, init_load_dim, init_load_view, init_load_fact, \
+    load_time_dimension
 from datetime import datetime
 
 
 @api.route('/tables', methods=['GET'])
 @login_required
 def get_all_tables():
+    """
+       Táblák lekérdezése.
+       ---
+
+        responses:
+         200:
+           description: OK
+       """
     tables = Table.query.all()
     return jsonify([table.to_dict() for table in tables]), 200
 
@@ -23,42 +32,66 @@ def get_all_tables():
 @api.route('/tables/add', methods=['POST'])
 @login_required
 def add_table():
+    """
+        Adattábla létrehozása.
+        ---
+        parameters:
+        - name: metamodel_id
+        - name: source_connection_id
+        - name: target_connection_id
+        - name: table_name
+        - name: table_type
+        - name: dimension_type
+        - name: dimension_key
+        - name: columns
+        - name: filters
+        - name: joins
+
+        responses:
+          201:
+            description: OK
+        """
     data = request.json
     metamodel = Metamodel.get_by_id(metamodel_id=data['metamodel_id'])
+    source_connection = Connection.get_by_id(data['source_connection_id'])
+
     try:
+        table_name = data['table_name']
+        table_type = data['table_type']
+        dimension_type = data['dimension_type']
+        dimension_key = data['dimension_key']
         columns = data['columns']
         filters = data['filters']
         joins = data['joins']
-        column_names = ''
+        creation_timestamp = datetime.now()
 
     except Exception as e:
         current_app.logger.error(
-                'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
+            'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
         return jsonify({'message': 'Table creation failed due to server error'}), 500
 
     else:
 
         try:
-            new_table = Table.add_new_table(table_name=data['table_name'], table_type=data['table_type'],
-                                            dimension_type=data['dimension_type'], dimension_key=data['dimension_key'],
+            new_table = Table.add_new_table(table_name=table_name, table_type=table_type,
+                                            dimension_type=dimension_type, dimension_key=dimension_key,
                                             metamodel_id=metamodel.metamodel_id,
-                                            source_connection_id=data['source_connection_id'], columns='', sql='')
+                                            metamodel_name=metamodel.metamodel_name,
+                                            source_connection_id=source_connection.connection_id,
+                                            source_connection_name=source_connection.bind_key, sql='',
+                                            creation_timestamp=creation_timestamp)
 
             db.session.add(new_table)
+            db.session.commit()
 
             for column in columns:
                 new_column = Column.add_new_column(column_name=column['column_name'], column_type=column['column_type'],
                                                    table_id=new_table.table_id)
                 db.session.add(new_column)
-                if len(column_names) == 0:
-                    column_names = new_column.column_name
-                else:
-                    column_names = column_names + new_column.name
 
-            new_table.columns = column_names
             sql = sqlmapper(source_table=data['source_table'], columns=columns, joins=joins, filters=filters)
             new_table.modify_sql(sql=sql)
-            metamodel.add_new_table(table_name=new_table.table_name)
+            #metamodel.add_new_table(table_name=new_table.table_name)
             db.session.commit()
 
         except (sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable, sqlalchemy.exc.ProgrammingError) as e:
@@ -90,7 +123,9 @@ def add_table():
                     target_table.create(bind=target_engine)
                     connection.commit()
 
-            except (sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable, sqlalchemy.exc.ProgrammingError) as e:
+            except (
+                    sqlalchemy.exc.IntegrityError, psycopg2.errors.DuplicateTable,
+                    sqlalchemy.exc.ProgrammingError) as e:
                 db.session.rollback()
                 current_app.logger.error(
                     'ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + str(e))
@@ -106,16 +141,27 @@ def add_table():
                 db.session.rollback()
                 current_app.logger.error(
                     datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table creation failed' + str(e))
-                return jsonify({'message': 'Table creation failed due to server error'}), 500
+                return jsonify({'message': 'Table creation failed due to server error - második fázis'}), 500
 
             else:
-                current_app.logger.info(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table created successfully')
+                current_app.logger.info(
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table created successfully')
                 return jsonify({'message': 'Table created successfully', 'data': new_table.to_dict()}), 201
 
 
 @api.route('/table/init/<int:table_id>', methods=['POST'])
 @login_required
 def init_table(table_id):
+    """
+        Adattábla kezdeti töltése.
+        ---
+        parameters:
+        - name: table_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         table = Table.get_by_id(table_id=table_id)
 
@@ -168,6 +214,16 @@ def init_table(table_id):
 @api.route('/table/load/<int:table_id>', methods=['POST'])
 @login_required
 def load_table(table_id):
+    """
+        Adattábla szokásos töltése.
+        ---
+        parameters:
+        - name: table_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         table = Table.get_by_id(table_id=table_id)
 
@@ -217,10 +273,20 @@ def load_table(table_id):
 @api.route('/table/<int:table_id>/remove', methods=['POST'])
 @login_required
 def remove_table(table_id):
+    """
+        Adattábla törlése.
+        ---
+        parameters:
+        - name: table_id
+
+        responses:
+          201:
+            description: OK
+        """
     try:
         table = Table.get_by_id(table_id=table_id)
         metamodel = Metamodel.get_by_id(table.metamodel_id)
-        metamodel.tables.replace(table.table_name, '')
+        #metamodel.tables.replace(table.table_name, '')
 
         target_connection = Connection.get_by_id(connection_id=metamodel.target_connection_id)
         target_engine = db.get_engine(bind_key=target_connection.bind_key)
@@ -280,10 +346,62 @@ def update_table(table_id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
-                                 'Error updating metamodel' + ' ' + str(e))
-        return jsonify({'error': 'Error updating metamodel'}), 500
+                                 'Error updating table' + ' ' + str(e))
+        return jsonify({'error': 'Error updating table'}), 500
 
     else:
         current_app.logger.info(
             'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Table updated successfully')
         return jsonify({'message': 'Table updated successfully'}), 201
+
+
+@api.route('/tables/add/time', methods=['POST'])
+@login_required
+def add_time_dimension():
+    """
+        Idődimenzió létrehozása.
+        ---
+        parameters:
+        - name: metamodel_id
+        - name: table_name
+        - name: load_type
+        - name: start_date
+        - name: end_date
+
+        responses:
+          201:
+            description: OK
+        """
+    try:
+        data = request.json
+        metamodel = Metamodel.get_by_id(data['metamodel_id'])
+        table_name = data['table_name']
+        load_option = data['load_type']
+        target = Connection.get_by_id(connection_id=metamodel.target_connection_id)
+        target_engine = db.get_engine(bind_key=target.bind_key)
+        start_date = datetime.strptime(data['start_date'], '%Y-%m-%d %H:%M')
+        end_date = datetime.strptime(data['end_date'], '%Y-%m-%d %H:%M')
+        creation_timestamp = datetime.now()
+
+        load_time_dimension(target_engine, table_name, load_option, start_date, end_date)
+
+        new_table = Table.add_new_table(table_name=table_name, table_type="dimension",
+                                        dimension_type="noversion", dimension_key="-",
+                                        metamodel_id=metamodel.metamodel_id,
+                                        metamodel_name=metamodel.metamodel_name,
+                                        source_connection_id=0,
+                                        source_connection_name="-", sql='-',
+                                        creation_timestamp=creation_timestamp)
+        db.session.add(new_table)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error('ERROR:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' +
+                                 'Error creating time dimension' + ' ' + str(e))
+        return jsonify({'error': 'Error creating time dimension'}), 500
+
+    else:
+        current_app.logger.info(
+            'INFO:' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + 'Time dimension created successfully')
+        return jsonify({'message': 'Time dimension created successfully'}), 201

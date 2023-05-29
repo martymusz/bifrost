@@ -13,13 +13,7 @@ const Column = ({ column }) => {
 
   return (
     <div ref={drag} style={{ opacity: isDragging ? 0.5 : 1 }}>
-      <table>
-        <thead>
-          <tr>
-            <td>{column.column}</td>
-          </tr>
-        </thead>
-      </table>
+      <div>{column.column_name}</div>
     </div>
   );
 };

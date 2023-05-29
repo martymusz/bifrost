@@ -17,13 +17,13 @@ def sqlmapper(source_table, columns, joins, filters):
     join_clauses = []
     join_type = ''
     for join in joins:
-        if join["join_type"] == 1:
+        if join["join_type"] == '1':
             join_type += 'INNER JOIN'
-        elif join["join_type"] == 2:
+        elif join["join_type"] == '2':
             join_type += 'LEFT JOIN'
-        elif join["join_type"] == 3:
+        elif join["join_type"] == '3':
             join_type += 'RIGHT JOIN'
-        condition = join["join_condition"].replace('_', '.')
+        condition = join["condition"].replace('_', '.')
         join_clause = f"{join_type} {join['table_name']} ON {condition}"
         join_clauses.append(join_clause)
 
@@ -39,5 +39,4 @@ def sqlmapper(source_table, columns, joins, filters):
 
     sql = f"{select_clause} {from_clause} {' '.join(join_clauses)} {where_clause}"
     return sql
-
 

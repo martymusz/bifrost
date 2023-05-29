@@ -9,11 +9,29 @@ from app.api import api
 
 @api.route('/test', methods=['GET'])
 def test():
+    """
+       Testing endpoint.
+       ---
+       responses:
+         200:
+           description: OK
+       """
     return jsonify({'message': 'Welcome to Bifrost'}), 200
 
 
 @api.route('/login', methods=['POST'])
 def login():
+    """
+       Végpont a bejelentkezésre.
+       ---
+       parameters:
+         - name: email
+         - name: password
+
+       responses:
+         200:
+           description: OK
+       """
     try:
         data = request.json
         email = data['email']
@@ -57,6 +75,18 @@ def login():
 
 @api.route('/register', methods=['POST'])
 def register():
+    """
+       Regisztrációs végpont.
+       ---
+       parameters:
+         - name: email
+         - name: password
+         - name: name
+
+       responses:
+         201:
+           description: OK
+       """
     data = request.json
     email = data['email']
     password = data['password']
