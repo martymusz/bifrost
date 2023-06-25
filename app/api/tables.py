@@ -63,7 +63,10 @@ def add_table():
         columns = data['columns']
         filters = data['filters']
         joins = data['joins']
+        source_table = data['source_table']
         creation_timestamp = datetime.now()
+
+        print(source_table)
 
     except Exception as e:
         current_app.logger.error(
@@ -89,7 +92,7 @@ def add_table():
                                                    table_id=new_table.table_id)
                 db.session.add(new_column)
 
-            sql = sqlmapper(source_table=data['source_table'], columns=columns, joins=joins, filters=filters)
+            sql = sqlmapper(source_table=source_table, columns=columns, joins=joins, filters=filters)
             new_table.modify_sql(sql=sql)
             #metamodel.add_new_table(table_name=new_table.table_name)
             db.session.commit()
@@ -114,7 +117,7 @@ def add_table():
 
         else:
             try:
-                target_table = table_mapper(table_name=data['table_name'], source_columns=columns,
+                target_table = table_mapper(table_name=table_name, source_columns=columns,
                                             schema=metamodel.metamodel_schema, table_type=new_table.table_type)
 
                 target = Connection.get_by_id(connection_id=metamodel.target_connection_id)

@@ -25,7 +25,6 @@ class Tables extends Component {
   headers = [
     "table_id",
     "table_name",
-    "table_type",
     "metamodel_name",
     "source_connection_name",
     "sql",
@@ -35,7 +34,6 @@ class Tables extends Component {
     "Műveletek",
     "Tábla ID",
     "Tábla név",
-    "Tábla típus",
     "Metamodell név",
     "Forrás",
     "SQL",

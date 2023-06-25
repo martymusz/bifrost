@@ -38,6 +38,7 @@ class TableSetup extends Component {
       source_table: "",
 
       joins: [],
+      joins_processed: [],
       showjoinsPopup: false,
       joinSetupRequired: false,
 
@@ -274,34 +275,10 @@ class TableSetup extends Component {
     });
   };
 
-  toggleFiltersPopup = () => {
-    this.setState((prevState) => ({
-      showFiltersPopup: !prevState.showFiltersPopup,
-    }));
-  };
-
-  addFilter = (filter) => {
-    this.toggleFiltersPopup();
-    this.setState(
-      (prevState) => ({ filters: [...prevState.filters, filter] }),
-      () => {
-        this.checkSetupComplete();
-      }
-    );
-  };
-
-  removeFilter = (condition) => {
-    const removedFilter = this.state.filters.filter(
-      (filter) => filter.condition !== condition
-    );
-    this.setState({ filters: removedFilter }, () => {
-      this.checkSetupComplete();
-    });
-  };
-
-  addTable = () => {
-    const joins_processed = [];
+  processJoin = () => {
+    var joins_processed = [];
     const array = this.state.joins;
+    var source_table = this.state.selected_tables[0];
 
     if (array.length !== 0) {
       array.sort((a, b) => {
@@ -319,11 +296,11 @@ class TableSetup extends Component {
 
       joins_processed.push({
         table_name: filteredjoins[0].joined_table,
-        join_type: parseInt(filteredjoins[0].join_type),
-        join_condition: filteredjoins[0].condition,
+        join_type: filteredjoins[0].join_type,
+        condition: filteredjoins[0].condition,
       });
 
-      const source_table = filteredjoins[0].table_name;
+      source_table = filteredjoins[0].table_name;
 
       filteredjoins.forEach((join, index) => {
         const joined_table_found = joins_processed.some(
@@ -369,8 +346,8 @@ class TableSetup extends Component {
         ) {
           joins_processed.push({
             table_name: join.table_name,
-            join_type: parseInt(join.join_type),
-            join_condition: join.condition,
+            join_type: join.join_type,
+            condition: join.condition,
           });
         } else if (
           index > 0 &&
@@ -381,8 +358,8 @@ class TableSetup extends Component {
         ) {
           joins_processed.push({
             table_name: join.joined_table,
-            join_type: parseInt(join.join_type),
-            join_condition: join.condition,
+            join_type: join.join_type,
+            condition: join.condition,
           });
         } else if (
           index > 0 &&
@@ -392,8 +369,8 @@ class TableSetup extends Component {
         ) {
           joins_processed.push({
             table_name: join.joined_table,
-            join_type: parseInt(join.join_type),
-            join_condition: join.condition,
+            join_type: join.join_type,
+            condition: join.condition,
           });
         } else if (
           index > 0 &&
@@ -403,60 +380,87 @@ class TableSetup extends Component {
         ) {
           joins_processed.push({
             table_name: join.table_name,
-            join_type: parseInt(join.join_type),
-            join_condition: join.condition,
+            join_type: join.join_type,
+            condition: join.condition,
           });
         }
       });
-
-      this.setState(
-        {
-          source_table: source_table,
-          joins_processed: joins_processed,
-        },
-        () => console.log(this.state)
-      );
     }
 
-    const token = Cookies.get("authToken");
-    fetch("/api/tables/add", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        table_name: this.state.table_name,
-        table_type: this.state.table_type,
-        dimension_type: this.state.dimension_type,
-        dimension_key: this.state.dimension_key,
-        source_connection_id: parseInt(this.state.source_connection_id),
-        metamodel_id: parseInt(this.state.metamodel_id),
-        columns: this.state.selected_columns,
-        source_table: this.state.source_table,
-        joins: this.state.joins,
-        filters: this.state.filters,
-      }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          this.setState({
-            message: "Adattábla létrehozása sikeres!",
-            messageVariant: "success",
-            showAlert: true,
+    return { joins_processed, source_table };
+  };
+
+  toggleFiltersPopup = () => {
+    this.setState((prevState) => ({
+      showFiltersPopup: !prevState.showFiltersPopup,
+    }));
+  };
+
+  addFilter = (filter) => {
+    this.toggleFiltersPopup();
+    this.setState(
+      (prevState) => ({ filters: [...prevState.filters, filter] }),
+      () => {
+        this.checkSetupComplete();
+      }
+    );
+  };
+
+  removeFilter = (condition) => {
+    const removedFilter = this.state.filters.filter(
+      (filter) => filter.condition !== condition
+    );
+    this.setState({ filters: removedFilter }, () => {
+      this.checkSetupComplete();
+    });
+  };
+
+  addTable = () => {
+    const { joins_processed, source_table } = this.processJoin();
+    this.setState(
+      { joins_processed: joins_processed, source_table: source_table },
+      () => {
+        const token = Cookies.get("authToken");
+        fetch("/api/tables/add", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            table_name: this.state.table_name,
+            table_type: this.state.table_type,
+            dimension_type: this.state.dimension_type,
+            dimension_key: this.state.dimension_key,
+            source_connection_id: parseInt(this.state.source_connection_id),
+            metamodel_id: parseInt(this.state.metamodel_id),
+            columns: this.state.selected_columns,
+            source_table: this.state.source_table,
+            joins: this.state.joins_processed,
+            filters: this.state.filters,
+          }),
+        })
+          .then((response) => {
+            if (response.ok) {
+              this.setState({
+                message: "Adattábla létrehozása sikeres!",
+                messageVariant: "success",
+                showAlert: true,
+              });
+              this.navigateToTablePage();
+            } else {
+              this.setState({
+                message: "Hiba! Az adattábla létrehozása nem sikerült!",
+                messageVariant: "danger",
+                showAlert: true,
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Request failed:", error);
           });
-          this.navigateToTablePage();
-        } else {
-          this.setState({
-            message: "Hiba! Az adattábla létrehozása nem sikerült!",
-            messageVariant: "danger",
-            showAlert: true,
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Request failed:", error);
-      });
+      }
+    );
   };
 
   render() {
