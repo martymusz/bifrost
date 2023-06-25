@@ -12,7 +12,7 @@ def test_get_all_tasks(client):
 
 def test_add_remove_task(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/tasks/add', headers=headers, json={'table_id': '74', 'owner_id': '1',
+    response = client.post('/api/tasks/add', headers=headers, json={'table_id': '95', 'owner_id': '1',
                                                                     'load_type': 'regular', 'task_trigger': 'date',
                                                                     'task_schedule': '1',
                                                                     'start_date': '2023-07-29 20:52',
