@@ -11,7 +11,8 @@ from app.utils.load import add_new_task, remove_task, scheduler, scheduled_init_
 @api.route('/tasks', methods=['GET'])
 @login_required
 def get_all_tasks():
-    tasks = Task.query.all()
+    result = Task.query.all()
+    tasks = sorted(result, key=lambda x: x.task_id)
     return jsonify([task.to_dict() for task in tasks]), 200
 
 

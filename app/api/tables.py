@@ -25,7 +25,8 @@ def get_all_tables():
          200:
            description: OK
        """
-    tables = Table.query.all()
+    result = Table.query.all()
+    tables = sorted(result, key=lambda x: x.table_id)
     return jsonify([table.to_dict() for table in tables]), 200
 
 
