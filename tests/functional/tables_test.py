@@ -12,14 +12,14 @@ def test_get_all_tables(client):
 
 def test_load_table(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/table/load/43', headers=headers, json={})
+    response = client.post('/api/table/load/74', headers=headers, json={})
     assert response.status_code == 201
     assert response.json['message'] == 'Load completed successfully'
 
 
 def test_init_table(client):
     headers = {'Authorization': f'Bearer {get_auth_token(client)}'}
-    response = client.post('/api/table/init/62', headers=headers, json={})
+    response = client.post('/api/table/init/74', headers=headers, json={})
     assert response.status_code == 201
     assert response.json['message'] == 'Load completed successfully'
 
